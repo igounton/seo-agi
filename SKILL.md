@@ -1,6 +1,6 @@
 ---
 name: seobuild-onpage
-version: 1.8.0
+version: 1.9.0
 description: >
   Write SEO pages that rank on Google AND get cited by LLMs. Uses live SERP data,
   500-token chunk architecture, RAG optimization for Gemini 3.5 Flash, and the
@@ -100,7 +100,8 @@ If the user has Ahrefs or SEMRush MCP servers connected, use them to supplement 
 
 | Priority | Source | What It Provides |
 |----------|--------|-----------------|
-| 1 | DataForSEO | Live SERP, competitor content parsing, PAA, keyword volumes |
+| 1 | **Massive Web Render** (v1.9.0+) | Competitor content parsing only. Returns clean rendered markdown including JS-loaded content. Used when `MASSIVE_API_TOKEN` is set. Falls back to DataForSEO per-URL on failure. Does NOT provide SERP organic results. |
+| 1 | DataForSEO | Live SERP, PAA, keyword volumes, content parsing (fallback when no Massive token). Required -- the SERP and keyword data path has no alternative today. |
 | 2 | Ahrefs MCP | Keyword difficulty, DR, traffic estimates, backlink data |
 | 3 | SEMRush MCP | Keyword analytics, organic research, domain overview |
 | 4 | GSC | Owned query performance, CTR, position, cannibalization |

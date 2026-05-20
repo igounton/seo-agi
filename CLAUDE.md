@@ -24,6 +24,11 @@ scripts/
   lib/
     env.py            -- Config loader
     dataforseo.py     -- DataForSEO REST API client
+    massive.py        -- Massive Web Render client (v1.9.0). Primary
+                         competitor content parser when MASSIVE_API_TOKEN
+                         is set. Returns clean markdown including
+                         JS-loaded content. Per-URL fallback to
+                         DataForSEO on failure.
     serp_analyze.py   -- Content gap analysis engine
     gsc_client.py     -- Google Search Console client
 references/
@@ -49,6 +54,11 @@ The SKILL.md is the living document. It contains:
   (Google Sites, Medium, Subreddits, Google Sheets, LinkedIn). Quality gates
   apply equally to off-page content -- thin tributaries net-harm the money
   page's entity signal. Generated via `scripts/tributary_gen.py`.
+- **Massive Web Render integration** (v1.9.0): competitor content
+  parsing now flows through Massive when `MASSIVE_API_TOKEN` is set,
+  with graceful per-URL fallback to DataForSEO. SERP and keyword data
+  still come from DataForSEO -- Massive's search endpoint doesn't
+  return organic results.
 - **Gemini 3.5 Flash RAG Optimization** (v1.8.0): DOM Vectoring &
   Shard Extraction Compliance (critical data must live in front-facing
   `<table>` / RDFa, not just JSON-LD), Trust Pilot as Tier 1 tributary,

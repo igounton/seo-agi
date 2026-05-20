@@ -2,6 +2,23 @@
 
 All notable changes to seo-agi are documented here.
 
+## [1.9.0] - 2026-05-20
+
+### Added
+- **Massive Web Render integration** (`scripts/lib/massive.py`). When `MASSIVE_API_TOKEN` is configured, the `/browser` endpoint becomes the primary competitor content parser. Returns clean rendered markdown including JS-loaded content -- the gap DataForSEO's `content_parsing/live` has always had.
+- **Per-URL graceful fallback**: if Massive errors or returns empty for any single URL, that URL falls back to DataForSEO. Partial Massive outage cannot break a run.
+- **`content_parsers` field** in research output records which parser handled each URL (e.g. `{"massive": 4, "dataforseo-fallback": 1}`). Visible in saved JSON and printed in compact output's per-URL log lines (`via massive` / `via dataforseo`).
+- **`MASSIVE_API_TOKEN`** added to `.env.example` and `env.py` credential loader. New `creds["has_massive"]` flag.
+- 8 new unit tests in `tests/test_massive.py` covering the markdown parser, output-shape contract with DataForSEOClient, and client construction.
+
+### Changed
+- `scripts/research.py` content-parsing step now branches on Massive availability per URL.
+- SKILL.md Data Cascade table reorganized to surface Massive as Priority 1 for content parsing, with DataForSEO as the SERP + keyword data backbone and per-URL fallback.
+
+### Not Changed
+- **SERP organic results, PAA, and keyword data still come from DataForSEO.** Massive's `/search` endpoint as of v1.9.0 only returns "also-searched" suggestions, not organic results. SERP path is unchanged.
+- All existing tests pass. Heading extraction, n-gram analysis, meta-entity isolation, intent detection, and the 48-point checklist behave identically whichever content parser is used.
+
 ## [1.8.0] - 2026-05-08
 
 ### Added

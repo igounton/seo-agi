@@ -26,12 +26,14 @@ import argparse
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Optional
 
 # Add parent dir to path for lib imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from lib.env import load_env, load_config, get_credentials, ensure_dirs
 from lib.dataforseo import DataForSEOClient
+from lib.massive import MassiveClient
 from lib.serp_analyze import analyze_serp
 
 
@@ -343,6 +345,21 @@ def run_research(args) -> dict:
         creds["dataforseo_login"], creds["dataforseo_password"]
     )
 
+    # v1.9.0: Massive Web Render is the primary content parser when a
+    # token is configured. It returns clean rendered markdown including
+    # JS-loaded content, which DataForSEO's content_parsing/live misses.
+    # Falls back to DataForSEO on a per-URL basis if Massive errors out
+    # or returns empty, so a partial Massive outage doesn't break the run.
+    # SERP results and keyword data still come from DataForSEO -- Massive's
+    # /search endpoint only returns 'also-searched' suggestions, not
+    # organic results.
+    massive: Optional[MassiveClient] = (
+        MassiveClient(creds["massive_api_token"])
+        if creds.get("has_massive")
+        else None
+    )
+    parsers_used: list[str] = []
+
     # Step 1: SERP results
     print(f"Fetching SERP for: {args.keyword}", file=sys.stderr)
     serp_data = client.serp_live(
@@ -353,27 +370,51 @@ def run_research(args) -> dict:
     print("Fetching related keywords...", file=sys.stderr)
     related_kw = client.related_keywords(args.keyword, location, language)
 
-    # Step 3: Parse competitor content (top N)
+    # Step 3: Parse competitor content (top N). Massive first if available,
+    # DataForSEO as per-URL fallback.
     content_data = []
     organic = serp_data.get("organic", [])
     parse_count = min(args.content_depth, len(organic))
 
     for i in range(parse_count):
         url = organic[i].get("url", "")
-        if url:
-            print(
-                f"Parsing content ({i+1}/{parse_count}): {url[:80]}...",
-                file=sys.stderr,
-            )
-            content = client.content_parse(url)
-            content_data.append(content)
-
-            # Merge content data back into organic result
-            if content:
-                organic[i]["word_count"] = content.get("word_count", 0)
-                organic[i]["headings"] = content.get("headings", [])
-        else:
+        if not url:
             content_data.append(None)
+            continue
+
+        primary = "massive" if massive else "dataforseo"
+        print(
+            f"Parsing content ({i+1}/{parse_count}, via {primary}): "
+            f"{url[:70]}...",
+            file=sys.stderr,
+        )
+
+        content: Optional[dict] = None
+        if massive:
+            content = massive.content_parse(url)
+            if content and content.get("word_count", 0) > 0:
+                parsers_used.append("massive")
+            else:
+                # Massive returned nothing usable; fall back per-URL.
+                print(
+                    f"  Massive empty/failed for {url[:60]}; "
+                    f"falling back to DataForSEO",
+                    file=sys.stderr,
+                )
+                content = client.content_parse(url)
+                if content:
+                    parsers_used.append("dataforseo-fallback")
+        else:
+            content = client.content_parse(url)
+            if content:
+                parsers_used.append("dataforseo")
+
+        content_data.append(content)
+
+        # Merge content data back into organic result
+        if content:
+            organic[i]["word_count"] = content.get("word_count", 0)
+            organic[i]["headings"] = content.get("headings", [])
 
     # Step 4: Analyze
     print("Analyzing competitive landscape...", file=sys.stderr)
@@ -387,12 +428,16 @@ def run_research(args) -> dict:
 
     # Assemble research output. Surface the new signals at top level for
     # easy brief consumption -- do not bury them inside `analysis`.
+    content_parser_summary = (
+        Counter(parsers_used) if parsers_used else Counter()
+    )
     research = {
         "keyword": args.keyword,
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "location": location,
         "language": language,
         "source": "dataforseo",
+        "content_parsers": dict(content_parser_summary),
         "primary_intent": primary_intent,
         "secondary_intent": secondary_intent,
         "meta_entities": meta_entities,

@@ -1,4 +1,4 @@
-# seobuild-onpage v1.8.0
+# seobuild-onpage v1.9.0
 
 ### One command. Competitive data in. Ranking pages out.
 
@@ -9,6 +9,13 @@ claude install-skill gbessoni/seobuild-onpage
 Most SEO tools tell you what's wrong with your site. This one writes the pages.
 
 `/seoagi "airport parking JFK"` pulls the current SERP, analyzes what's ranking, finds the gaps in their content, and writes you a complete page -- with the heading structure, depth, FAQ section, and schema markup that actually competes. Not thin content. Not keyword-stuffed filler. Pages backed by live data from the tools the pros use.
+
+**New in v1.9.0 -- Massive Web Render as primary content parser:**
+- **Massive Web Render** (render.joinmassive.com) is now the primary competitor content parser when `MASSIVE_API_TOKEN` is configured. Returns clean rendered markdown including JS-loaded content that DataForSEO's `content_parsing/live` endpoint misses.
+- **Graceful per-URL fallback to DataForSEO** -- if Massive errors or returns empty for any single URL, that URL falls back to DataForSEO. A partial Massive outage cannot break a research run.
+- **SERP organic results and keyword data continue to come from DataForSEO** -- Massive's `/search` endpoint only returns "also-searched" query suggestions, not organic results, so the SERP path is unchanged.
+- **`content_parsers` field added** to research output so you can see exactly which parser handled each URL (e.g. `{"massive": 4, "dataforseo-fallback": 1}`).
+- Setup: add `MASSIVE_API_TOKEN=...` to `~/.config/seo-agi/.env`. No token = skill runs in pure DataForSEO mode exactly as before.
 
 **New in v1.8.0 -- Gemini 3.5 Flash RAG Optimization + Off-Page Trust Expansion:**
 - **DOM Vectoring & Shard Extraction Compliance** (Section 6) -- Google's AI Overviews are built by Gemini 3.5 Flash running a RAG pipeline that extracts structural "shards" from the raw HTML DOM. JSON-LD in `<head>` is no longer sufficient by itself: critical data points must live in front-facing `<table>` markup or inline RDFa spans where a clean-session crawler can see them without JavaScript execution.

@@ -53,6 +53,7 @@ def load_env() -> dict:
         "GSC_SERVICE_ACCOUNT_PATH", "GSC_CLIENT_ID",
         "GSC_CLIENT_SECRET", "GSC_REFRESH_TOKEN",
         "AHREFS_API_KEY", "SEMRUSH_API_KEY",
+        "MASSIVE_API_TOKEN",
     ]:
         val = os.environ.get(key)
         if val:
@@ -88,6 +89,7 @@ def get_credentials() -> dict:
         "gsc_refresh_token": env.get("GSC_REFRESH_TOKEN", ""),
         "ahrefs_api_key": env.get("AHREFS_API_KEY", ""),
         "semrush_api_key": env.get("SEMRUSH_API_KEY", ""),
+        "massive_api_token": env.get("MASSIVE_API_TOKEN", ""),
     }
 
     creds["has_dataforseo"] = bool(
@@ -99,6 +101,7 @@ def get_credentials() -> dict:
     )
     creds["has_ahrefs"] = bool(creds["ahrefs_api_key"])
     creds["has_semrush"] = bool(creds["semrush_api_key"])
+    creds["has_massive"] = bool(creds["massive_api_token"])
 
     return creds
 
