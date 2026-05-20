@@ -1,4 +1,4 @@
-# seobuild-onpage v1.7.1
+# seobuild-onpage v1.8.0
 
 ### One command. Competitive data in. Ranking pages out.
 
@@ -10,20 +10,27 @@ Most SEO tools tell you what's wrong with your site. This one writes the pages.
 
 `/seoagi "airport parking JFK"` pulls the current SERP, analyzes what's ranking, finds the gaps in their content, and writes you a complete page -- with the heading structure, depth, FAQ section, and schema markup that actually competes. Not thin content. Not keyword-stuffed filler. Pages backed by live data from the tools the pros use.
 
+**New in v1.8.0 -- Gemini 3.5 Flash RAG Optimization + Off-Page Trust Expansion:**
+- **DOM Vectoring & Shard Extraction Compliance** (Section 6) -- Google's AI Overviews are built by Gemini 3.5 Flash running a RAG pipeline that extracts structural "shards" from the raw HTML DOM. JSON-LD in `<head>` is no longer sufficient by itself: critical data points must live in front-facing `<table>` markup or inline RDFa spans where a clean-session crawler can see them without JavaScript execution.
+- **Trust Pilot as Tier 1 Tributary** -- added to the Tributary Trust Protocol as a first-class Tier 1 asset. Trustpilot is now a highly weighted trust/relevance signal for LLMs and demonstrably shifts brand description vectoring in Gemini and ChatGPT within 48 hours of publication.
+- **Off-Page Schema Injection** -- new Tier 1 tactic. Embedding `Organization` and `Person` JSON-LD schema in third-party properties (Cloud Pages, press releases) with explicit links back to the brand's Google Business Profile CID blocks Google's NavBoost from rank-shuffling the money page during A/B exposure tests.
+- **Tributary network spread updated** from 4/5 Tier 1 assets to 5/7 to account for the two new asset types.
+- **48-point quality checklist** -- adds Trust Pilot profiling, off-page schema mapping, and DOM-visible data point checks. Passing threshold raised to 39/48.
+
 **New in v1.7.1 -- LLM Retrieval & Substantive Content Protocols:**
 - **Meta-Specific Entity Isolation** -- competitor SERP descriptions are mined for the bolded query-matched terms (the snippet entities Google itself surfaces), not generic body entities. These become the primary entity set the brief must cover, because they are the exact tokens already validated as relevant by Google's snippet generator.
 - **Bigram / Trigram AI Alignment** -- top 3 ranking competitors' body text is tokenized to extract the top 5 bigrams and top 5 trigrams. The AI Summary Nugget (top of page, position zero for LLM retrieval) must include 2 or more of these n-grams verbatim. AI retrieval scoring rewards token-window overlap with consensus phrasing -- this is how you align with what the LLM has already learned the topic "looks like."
 - **Primary + Secondary Intent Mapping (Orcas 1)** -- single-intent pages underperform. Every page now maps Primary intent (the question the user typed) into the first 500 tokens AND Secondary intent (the action funnel: compare, book, contact, calculate) into the next two chunks. Pages without a secondary action path fail the dual-intent check.
 - **The 410 Prune Protocol** -- on rewrites, every legacy URL gets an explicit status-code recommendation. 301 preserves equity when the topic survives. 410 prunes thin, cannibalizing, or out-of-topical-circle pages so they stop dragging the domain. Silent leave-as-is is no longer an acceptable output for a legacy URL audit.
 - **Local Codebase Contextual Linking** -- when the skill is run inside a project repo, it scans the local file structure (`.tsx`, `.md`, `.html`, etc.), detects the framework, injects semantic HTML directly into source files where appropriate, and emits `.htaccess` / Nginx / `next.config.js` redirect snippets for the 410 recommendations. The skill writes ranking pages, not just content briefs.
-- **45-point quality checklist** -- adds Meta Entity Isolation, N-Gram Alignment, Dual-Intent, and Status Code Governance checks.
+- **48-point quality checklist** -- adds Meta Entity Isolation, N-Gram Alignment, Dual-Intent, and Status Code Governance checks.
 
 **New in v1.6.0 -- ICP-Driven Content + Local Trust Signals:**
 - **Ideal Customer Persona (ICP) Integration** -- page briefs now require a defined ICP with demographics, psychographics, and specific pain points. Content maps to who it's actually for, not a generic audience.
 - **Deep Entity History & Identity Tags** -- founding dates, generational ownership, and identity attributes (women-owned, veteran-owned, family-owned) are now explicit entity signals. Maps directly to GBP tags and conversational AI filtering.
 - **The Self-Placement Rule** -- ranking the client #1 in a listicle is now an approved tactic, provided the entry is strictly objective with a defined use-case and honest tradeoffs.
 - **Keyword Cannibalization Governance** -- strict rule against creating pages that compete with existing URLs for the same intent. Sales-focused duplicates of informational pages get tagged with `noindex` recommendation.
-- **45-point quality checklist** adding ICP alignment, entity history, and cannibalization checks.
+- **48-point quality checklist** adding ICP alignment, entity history, and cannibalization checks.
 
 **New in v1.5.0 -- Forensic SEO + Structural Signals:**
 - **Semantic HTML Containers** -- generated HTML now uses `<article>`, `<section>`, `<aside>`, `<main>` instead of generic `<div>`. Google's crawler uses these elements to identify the Main Content zone for passage extraction and AI retrieval.
@@ -33,7 +40,7 @@ Most SEO tools tell you what's wrong with your site. This one writes the pages.
 - **Query Fan-Out (QFO) Facet Coverage** -- each 500-token chunk now targets a specific AI sub-query. 40% of future traffic arrives via AI fan-out from a single user prompt.
 - **Forensic EMQ Check** -- EMQ in H1 is conditionally required when 2/3 top competitors use it. Competitive context overrides the default entity-based heading rule.
 - **Orcas One CVR Modeling** -- keywords now ranked by estimated conversion value, not raw volume. Position 1 at 4.5% CVR vs position 7 at 2%.
-- **45-point quality checklist** with QDD, Site vs. Page, EMQ ratio, and QFO facet checks.
+- **48-point quality checklist** with QDD, Site vs. Page, EMQ ratio, and QFO facet checks.
 
 **New in v1.4.0 -- March 2026 Update Protocols:**
 - **NavBoost Geographic Click Relevance** -- pages now reranked by geographic click patterns. Local pages require neighborhood-level specificity, not just city names. Observed across SEO X community testing.
@@ -95,7 +102,7 @@ SEO-AGI:
   12. For rewrites: evaluates each legacy URL and recommends 301 (when topic
       survives and equity should consolidate) or 410 (when the URL is thin,
       cannibalizing, or out-of-circle and should be pruned)
-  13. Validates against 45-point quality checklist
+  13. Validates against 48-point quality checklist
   14. Prints scorecard so you see exactly what passed
 ```
 
@@ -150,7 +157,7 @@ This isn't a wrapper around "write me an SEO article." The skill encodes strateg
 - "Not For You" block: honest section telling readers when this option is a bad fit (trust signal competitors skip)
 - Information Gain Test: every page must contain content not found in the top 10 Google results
 
-**The 45-point quality checklist every page runs through (selected highlights):**
+**The 48-point quality checklist every page runs through (selected highlights):**
 - Information gain over top 10 Google results? Check.
 - Reddit Test: would a practitioner upvote this? Check.
 - Core answer in first 150 words? Check.
@@ -191,8 +198,11 @@ This isn't a wrapper around "write me an SEO article." The skill encodes strateg
 - N-Gram AI Alignment -- 2+ bigrams/trigrams in AI Summary Nugget? Check.
 - Dual-Intent -- Primary intent in first 500 tokens + Secondary action funnel? Check.
 - Status Code Governance -- explicit 301 or 410 for every legacy URL? Check.
+- Trust Pilot entity profiling with exact service target bigrams? Check.
+- Off-page assets mapped with cross-cutting Organization/Person schema to GBP? Check.
+- Critical data points visible in raw HTML DOM (not buried solely in JSON-LD)? Check.
 
-Pages scoring below 36/45 get flagged with specific items to fix. The scorecard is printed at the end of every output so you see exactly what passed.
+Pages scoring below 39/48 get flagged with specific items to fix. The scorecard is printed at the end of every output so you see exactly what passed.
 
 ---
 

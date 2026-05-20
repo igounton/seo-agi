@@ -49,6 +49,12 @@ The SKILL.md is the living document. It contains:
   (Google Sites, Medium, Subreddits, Google Sheets, LinkedIn). Quality gates
   apply equally to off-page content -- thin tributaries net-harm the money
   page's entity signal. Generated via `scripts/tributary_gen.py`.
+- **Gemini 3.5 Flash RAG Optimization** (v1.8.0): DOM Vectoring &
+  Shard Extraction Compliance (critical data must live in front-facing
+  `<table>` / RDFa, not just JSON-LD), Trust Pilot as Tier 1 tributary,
+  Off-Page Schema Injection (Organization/Person schema on Cloud Pages
+  and PRs linking to GBP CID to block NavBoost rank-shuffling),
+  48-point checklist with new DOM-visible-data check.
 - **LLM Retrieval & Substantive Content Protocols** (v1.7.1): Meta Entity
   Isolation (snippet-level entities), Bigram/Trigram AI Alignment (top
   3 competitor n-grams in AI Summary Nugget), Dual-Intent Mapping

@@ -2,6 +2,18 @@
 
 All notable changes to seo-agi are documented here.
 
+## [1.8.0] - 2026-05-08
+
+### Added
+- **DOM Vectoring & Shard Extraction Compliance** (SKILL.md Section 6): documents the constraint that Google's AI Overviews are now built by Gemini 3.5 Flash via a RAG pipeline that extracts structural "shards" from the raw HTML DOM. Critical data must live in front-facing `<table>` markup or inline RDFa spans -- JSON-LD in `<head>` is no longer sufficient on its own.
+- **Trust Pilot as Tier 1 Tributary** (Section 11A): added to the Tributary Trust Protocol table as a first-class Tier 1 asset. Cited as a highly weighted trust/relevance signal for LLMs that shifts brand description vectoring in Gemini and ChatGPT within 48 hours.
+- **Off-Page Schema Injection** (Section 11A): new Tier 1 tactic. Embedding `Organization` and `Person` JSON-LD schema in Cloud Pages and PRs with explicit GBP CID backlinks blocks Google NavBoost from rank-shuffling the money page during A/B exposure tests.
+- **48-point quality checklist**: adds #46 (Trust Pilot entity profiling with target bigrams), #47 (off-page Organization/Person schema mapping), #48 (DOM-visible critical data points). Passing threshold raised to 39/48.
+
+### Changed
+- Tributary network spread requirement updated from "4 of the 5 Tier 1 assets" to "5 of the 7 Tier 1 assets" to account for the two new asset types.
+- SKILL.md frontmatter description now mentions Gemini 3.5 Flash RAG optimization.
+
 ## [1.7.1] - 2026-05-07
 
 ### Added

@@ -86,9 +86,19 @@ These issues override the score and require fixing regardless:
 
 ## v1.7.1 -- 45-Point Pass/Fail Checklist
 
-In addition to the rubric above, every page must pass the SKILL.md 45-point YES/NO checklist (Section 14). Pages scoring below 36/45 require revision before delivery. The four new checks added in v1.7.1:
+In addition to the rubric above, every page must pass the SKILL.md 48-point YES/NO checklist (Section 14). Pages scoring below 39/48 require revision before delivery. The four checks added in v1.7.1:
 
 - [ ] **#42 -- Meta Entity Isolation Check.** The entity set used in the brief was sourced from the bolded query-matched terms inside competitor SERP descriptions (`research.meta_entities`), not from generic body-content entity extraction. Snippet entities are the tokens Google's own snippet generator already validated as relevant.
 - [ ] **#43 -- N-Gram AI Alignment Check.** The AI Summary Nugget at the top of the page contains 2 or more bigrams or trigrams pulled verbatim from the top 3 ranking competitors' body text (`research.target_ngrams`). LLM retrieval scoring rewards token-window overlap with consensus phrasing.
 - [ ] **#44 -- Dual-Intent Check.** Primary intent (`research.primary_intent`) is satisfied within the first 500 tokens AND a Secondary action funnel (`research.secondary_intent`) is present in the next two chunks. Single-intent pages fail this check.
 - [ ] **#45 -- Status Code Governance.** For rewrites only. Every legacy URL evaluated has an explicit `301` (preserve equity, topic survives) or `410` (prune, thin/cannibalizing/out-of-circle) recommendation. Silent leave-as-is is a fail.
+
+---
+
+## v1.8.0 -- Gemini 3.5 Flash RAG + Off-Page Trust (48-Point)
+
+Three new checks for the AI-Overview era. Pages scoring below 39/48 require revision before delivery.
+
+- [ ] **#46 -- Trust Pilot Entity Profiling.** A Trust Pilot profile (or scheduled draft for one) exists for the target brand, with the page's exact service target bigrams (from `research.target_ngrams`) seeded into the profile description. See SKILL.md Section 11A for why Trustpilot now counts as Tier 1.
+- [ ] **#47 -- Off-Page Schema Mapping.** Companion content on Tier 1 properties (Cloud Pages, PRs, Medium, etc.) carries `Organization` and `Person` JSON-LD with explicit links back to the brand's GBP CID. This is the NavBoost-shuffle defense.
+- [ ] **#48 -- DOM-Visible Critical Data.** Pricing tables, capacity figures, schedules, and other primary data points appear in front-facing `<table>` markup or inline RDFa spans -- not buried solely in a JSON-LD block. Google's RAG pipeline (Gemini 3.5 Flash) extracts shards from the rendered DOM, not from `<head>` script tags.
