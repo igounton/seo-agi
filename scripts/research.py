@@ -161,6 +161,111 @@ def extract_target_ngrams(content_data: list, top_n_competitors: int = 3, top_k:
     }
 
 
+# v1.9.1: Generic-navigation anchor text that should NOT count as a
+# semantic spoke. Lowercased substring match. Tuned for English-language
+# commercial sites; extend if running on non-English SERPs.
+_GENERIC_ANCHORS = frozenset(
+    [
+        "home", "homepage", "back to home", "back to top",
+        "contact", "contact us", "contact me", "get in touch",
+        "about", "about us", "about me", "our team", "our company",
+        "privacy", "privacy policy", "terms", "terms of service",
+        "terms and conditions", "tos", "legal", "disclaimer",
+        "cookie policy", "cookies", "accessibility", "sitemap",
+        "login", "log in", "sign in", "sign up", "register",
+        "subscribe", "newsletter", "follow", "share",
+        "menu", "search", "more", "read more", "learn more",
+        "click here", "see more", "view more", "show more",
+        "previous", "next", "back", "skip to content",
+        "facebook", "twitter", "instagram", "linkedin", "youtube",
+        "tiktok", "pinterest", "social media",
+        "faq", "faqs", "help", "support", "customer service",
+        "careers", "jobs", "press", "blog", "news",
+        "español", "english", "language",
+    ]
+)
+
+
+def _normalize_domain(url: str) -> str:
+    """Bare-host extractor, scheme + path + www. stripped, lowercased."""
+    s = url.strip().lower()
+    if "://" in s:
+        s = s.split("://", 1)[1]
+    s = s.split("/", 1)[0]
+    if s.startswith("www."):
+        s = s[4:]
+    return s
+
+
+def _is_generic_anchor(text: str) -> bool:
+    """True if anchor text is navigational/boilerplate rather than semantic."""
+    t = (text or "").strip().lower()
+    if not t or len(t) > 80:
+        return True
+    # Nested-markdown leakage: [![alt](img)](href) sometimes leaves an
+    # anchor string starting with `!` or containing stray `[`/`]`.
+    # These are broken anchors, not real spokes.
+    if t.startswith("!") or "[" in t or "]" in t:
+        return True
+    if t in _GENERIC_ANCHORS:
+        return True
+    # Pure punctuation, single emoji, or arrow glyphs
+    if not re.search(r"[a-z0-9]", t):
+        return True
+    # Trailing punctuation often matters; check stripped form too
+    t_stripped = t.strip(".,;:!?\"'()[]{}<>->→»")
+    if t_stripped in _GENERIC_ANCHORS:
+        return True
+    return False
+
+
+def extract_missing_spokes(
+    content_data: list,
+    organic: list,
+    top_n_competitors: int = 3,
+    top_k: int = 20,
+) -> list[dict]:
+    """Mine internal-link anchors from the top N ranking competitors and
+    return the most-mentioned semantic anchors as candidate missing spokes.
+
+    For each of the top N competitor pages, walks `content.links`, keeps
+    only same-domain (internal) links, drops generic navigation, and
+    counts by lowercased anchor. The result is the client's build-order
+    priority for filling the topical silo gap (v1.9.1 SKILL.md Section 12).
+    """
+    counter: Counter[str] = Counter()
+    # Original-case representative for display
+    display_form: dict[str, str] = {}
+
+    for i, content in enumerate((content_data or [])[:top_n_competitors]):
+        if not content:
+            continue
+        competitor_url = (organic[i] if i < len(organic) else {}).get("url", "")
+        host = _normalize_domain(competitor_url) if competitor_url else ""
+        if not host:
+            continue
+        for link in content.get("links", []) or []:
+            anchor = (link.get("text") or "").strip()
+            url = (link.get("url") or "").strip()
+            if not anchor or not url:
+                continue
+            if _is_generic_anchor(anchor):
+                continue
+            link_host = _normalize_domain(url)
+            # Empty host means relative URL -> internal by definition.
+            # Otherwise must match the competitor's bare host.
+            if link_host and link_host != host:
+                continue
+            key = anchor.lower()
+            counter[key] += 1
+            display_form.setdefault(key, anchor)
+
+    return [
+        {"anchor": display_form[k], "competitor_count": v}
+        for k, v in counter.most_common(top_k)
+    ]
+
+
 def detect_secondary_intent(keyword: str, primary_intent: str, serp_data: dict) -> str:
     """Map secondary intent per the Orcas 1 dual-intent model. The primary
     intent answers 'what did the user type'. The secondary intent answers
@@ -232,7 +337,25 @@ def parse_args():
         action="store_true",
         help="Use fixture data (no API calls)",
     )
+    parser.add_argument(
+        "--differentiators",
+        default=None,
+        help=(
+            "Comma-separated brand differentiators / USPs to enforce in the "
+            "brief output (e.g. --differentiators='women-owned, 24/7 service, "
+            "no hidden fees'). Pages built without explicit differentiators "
+            "fail the v1.9.1 Brand Identity check."
+        ),
+    )
     return parser.parse_args()
+
+
+def _parse_differentiators(raw: Optional[str]) -> list[str]:
+    """Split comma-separated USPs, strip whitespace, drop empties.
+    Returns an empty list when input is None or only whitespace."""
+    if not raw:
+        return []
+    return [d.strip() for d in raw.split(",") if d.strip()]
 
 
 def load_mock_data(keyword: str) -> dict:
@@ -263,6 +386,8 @@ def load_mock_data(keyword: str) -> dict:
         "secondary_intent": "transactional",
         "meta_entities": [],
         "target_ngrams": {"bigrams": [], "trigrams": []},
+        "differentiators": [],
+        "missing_spokes": [],
         "serp": serp_data,
         "related_keywords": related_kw,
         "analysis": {
@@ -322,6 +447,8 @@ def run_research(args) -> dict:
             "secondary_intent": "unknown",
             "meta_entities": [],
             "target_ngrams": {"bigrams": [], "trigrams": []},
+            "differentiators": _parse_differentiators(getattr(args, "differentiators", None)),
+            "missing_spokes": [],
             "serp": {"organic": [], "paa": [], "featured_snippet": None},
             "related_keywords": [],
             "analysis": {
@@ -426,6 +553,12 @@ def run_research(args) -> dict:
     meta_entities = extract_meta_entities(serp_data)
     target_ngrams = extract_target_ngrams(content_data, top_n_competitors=3, top_k=5)
 
+    # Step 6: v1.9.1 -- Brand & spoke signals
+    differentiators = _parse_differentiators(getattr(args, "differentiators", None))
+    missing_spokes = extract_missing_spokes(
+        content_data, organic, top_n_competitors=3, top_k=20
+    )
+
     # Assemble research output. Surface the new signals at top level for
     # easy brief consumption -- do not bury them inside `analysis`.
     content_parser_summary = (
@@ -442,6 +575,8 @@ def run_research(args) -> dict:
         "secondary_intent": secondary_intent,
         "meta_entities": meta_entities,
         "target_ngrams": target_ngrams,
+        "differentiators": differentiators,
+        "missing_spokes": missing_spokes,
         "serp": serp_data,
         "related_keywords": related_kw[:20],
         "analysis": analysis,
@@ -577,6 +712,22 @@ def format_compact(research: dict) -> str:
             for t in trigrams:
                 lines.append(f"    - {t['phrase']} ({t['count']}x)")
 
+    # Brand differentiators (v1.9.1)
+    diffs = research.get("differentiators", [])
+    if diffs:
+        lines.append("\n## Brand Differentiators (mandatory in body + AI Summary Nugget)")
+        for d in diffs:
+            lines.append(f"  - {d}")
+
+    # Missing spokes (v1.9.1)
+    spokes = research.get("missing_spokes", [])
+    if spokes:
+        lines.append(
+            "\n## Missing Spokes (from top 3 competitor internal anchors)"
+        )
+        for s in spokes[:15]:
+            lines.append(f"  - {s['anchor']} ({s['competitor_count']}x)")
+
     return "\n".join(lines)
 
 
@@ -599,6 +750,8 @@ def main():
             "secondary_intent": research.get("secondary_intent"),
             "meta_entities": research.get("meta_entities", []),
             "target_ngrams": research.get("target_ngrams", {}),
+            "differentiators": research.get("differentiators", []),
+            "missing_spokes": research.get("missing_spokes", []),
             "word_count_stats": analysis.get("word_count_stats"),
             "paa_questions": analysis.get(
                 "paa_questions",

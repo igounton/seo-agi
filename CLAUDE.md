@@ -54,6 +54,13 @@ The SKILL.md is the living document. It contains:
   (Google Sites, Medium, Subreddits, Google Sheets, LinkedIn). Quality gates
   apply equally to off-page content -- thin tributaries net-harm the money
   page's entity signal. Generated via `scripts/tributary_gen.py`.
+- **Decision Fit + Brand Voice + Missing Spokes** (v1.9.1):
+  `--differentiators` CLI flag flows brand USPs into the brief output.
+  `extract_missing_spokes()` mines top 3 competitors' internal anchors
+  (generic nav + image-link leakage filtered) for the page's required
+  `Recommended Spoke Pages` section. Execution Protocol now asks for
+  differentiators if not provided. 51-point checklist with Decision
+  Fit, Brand Identity, and Topical Silo checks.
 - **Massive Web Render integration** (v1.9.0): competitor content
   parsing now flows through Massive when `MASSIVE_API_TOKEN` is set,
   with graceful per-URL fallback to DataForSEO. SERP and keyword data

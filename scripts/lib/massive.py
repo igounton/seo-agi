@@ -89,6 +89,7 @@ class MassiveClient:
         Title: first H1 found, otherwise empty.
         Word count: rough split of body text after stripping markdown
         syntax (consistent with how dataforseo.py counts).
+        Links: markdown `[text](url)` extraction for spoke detection.
         """
         headings: list[str] = []
         title = ""
@@ -108,9 +109,24 @@ class MassiveClient:
         text = re.sub(r"[`*_#>\[\]()!|-]+", " ", md)
         word_count = len([w for w in text.split() if w.strip()])
 
+        # Links (v1.9.1): standard markdown [text](url). Skip image links
+        # ![alt](src) -- those don't carry semantic anchor signal.
+        links: list[dict] = []
+        link_re = re.compile(r"(?<!!)\[([^\]]+)\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
+        for m in link_re.finditer(md):
+            anchor = m.group(1).strip()
+            url = m.group(2).strip()
+            if not anchor or not url:
+                continue
+            # Skip pure-hash/javascript/empty anchors -- no spoke value
+            if url.startswith(("#", "javascript:", "mailto:", "tel:")):
+                continue
+            links.append({"text": anchor, "url": url})
+
         return {
             "title": title,
             "word_count": word_count,
             "headings": headings,
             "plain_text_size": len(md),
+            "links": links,
         }

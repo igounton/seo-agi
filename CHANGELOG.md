@@ -2,6 +2,20 @@
 
 All notable changes to seo-agi are documented here.
 
+## [1.9.1] - 2026-05-21
+
+### Added
+- **`--differentiators` CLI flag** on `scripts/research.py`. Comma-separated brand USPs (e.g. `--differentiators="women-owned, 24/7 service, no hidden fees"`) flow through to the research JSON + brief output as `research.differentiators` for the writing agent to enforce verbatim.
+- **Missing Spoke Detection** in `scripts/research.py` (`extract_missing_spokes()`). Walks the top 3 ranking competitors' internal-link anchors, filters out generic navigation (Home, Contact, Privacy, FAQ, etc.) and nested-image-link leakage, returns a ranked `missing_spokes` list in the output payload.
+- **Link extraction in both content parsers**: `MassiveClient._parse_markdown` now returns a `links` list (`[{text, url}]`) from standard markdown link syntax; `DataForSEOClient._extract_links` walks `primary_content[].urls[]` across `main_topic` and `secondary_topic`.
+- **SKILL.md Section 12 (Hub & Spoke)** now requires every generated page to append a `## Recommended Spoke Pages` block built from `missing_spokes`.
+- **SKILL.md Execution Protocol** now stops and asks the user for Brand Differentiators / USPs if not provided up front. Pages built without explicit differentiators are flagged as Reddit-Test failure risk.
+- **51-point quality checklist** with #49 Decision Fit, #50 Brand Identity, #51 Topical Silo. Passing threshold raised to 42/51.
+- 15 new tests in `tests/test_research_v191.py` covering differentiator parsing, domain normalization, generic-anchor filtering (including nested-image-link leakage), missing-spokes extraction, and link extraction in both content parsers.
+
+### Changed
+- `references/quality-checklist.md` appended with a v1.9.1 section detailing the three new checks and threshold.
+
 ## [1.9.0] - 2026-05-20
 
 ### Added

@@ -1,6 +1,6 @@
 ---
 name: seobuild-onpage
-version: 1.9.0
+version: 1.9.1
 description: >
   Write SEO pages that rank on Google AND get cited by LLMs. Uses live SERP data,
   500-token chunk architecture, RAG optimization for Gemini 3.5 Flash, and the
@@ -612,6 +612,23 @@ See Section 13 -- Execution Protocol for when to invoke this tool in the workflo
 - Dead-end content (flat lists with no links) wastes crawl equity
 - Use research data to identify which hub/spoke pages competitors link between
 
+### Missing Spoke Detection (v1.9.1)
+When generating the page, you **must** append a `## Recommended Spoke Pages` section at the bottom of the document using the `missing_spokes` data from the competitive research output (see `scripts/research.py`). This list is extracted from the internal-link anchors of the top 3 ranking competitors and filtered for semantic anchors (generic navigation like "Contact Us", "Home", "Privacy Policy" is stripped). Each entry is a candidate hub or spoke the client's site is likely missing.
+
+**Format:**
+```markdown
+## Recommended Spoke Pages
+
+Based on internal-link anchors found on the top 3 ranking competitors,
+the following spoke pages are recommended for full topical-silo coverage:
+
+- [Anchor Phrase 1] -- candidate URL slug: /[slug-1]/
+- [Anchor Phrase 2] -- candidate URL slug: /[slug-2]/
+- ...
+```
+
+The section is a build-order recommendation for the client, not link-target stubs to be written immediately. Tag any anchor the agent cannot confidently slug with `{{MANUAL CHECK: slug needed}}`.
+
 ### Site-Level Entity Dominance -- The "Site Over Page" Rule
 
 The most exploitable weakness of high-DR generalist competitors (Ahrefs, NerdWallet, Forbes, Bankrate, etc.): they rank with a single page, not with a site architecturally built around the topic. A specialist niche site with lower DR will outrank a generalist page over time because Google rewards **site-level topicality** -- the signal that every page on the domain reinforces the same core topic cluster.
@@ -669,8 +686,20 @@ When the user provides a target keyword and brief:
    Word Count Target: [from research: recommended_min to recommended_max]
    H2 Target: [from research: median H2 count]
    PAA Questions to Answer: [from research]
+   Brand Differentiators / USPs: [explicit list -- women-owned, 24/7 service, no hidden fees, founding year, etc.]
    ```
    Confirm with user before writing unless they said "just write it."
+
+   **Brand Differentiators are mandatory.** If the user did not supply
+   them via `--differentiators=...` on `research.py` or in their initial
+   prompt, **stop and ask before writing.** Pages built without
+   explicit differentiators read as generic AI homogenization -- the
+   exact failure mode SKILL.md exists to prevent. The differentiators
+   must be woven verbatim into the 500-token chunks (not paraphrased
+   into marketing fluff) and surfaced at least once in the AI Summary
+   Nugget at the top of the page. If the user has no differentiators
+   to offer, flag the brand as a Reddit-Test failure risk before
+   proceeding.
 
 3. **Write**: Front-load the fast-scan summary matrix in the first 200 words. Build 500-token QFO facet chunks using the Snippet Answer rule. Apply `EMQ_REQUIRED` flag from the forensic audit. Integrate the "Not For You" block.
 
@@ -775,9 +804,12 @@ Run before every delivery. If any answer is NO, revise before delivering.
 | 46 | Trust Pilot entity profiling drafted with exact service target bigrams? | YES/NO |
 | 47 | Off-page assets mapped with cross-cutting Organization/Person schema to target GBP? | YES/NO |
 | 48 | Critical data points visible in raw HTML DOM (not buried solely in JSON-LD)? | YES/NO |
-| | **Score: X/48** | |
+| 49 | Decision Fit: heading structure maps to the user's psychological buying stage (Research / Compare / Buy) instead of just copying competitor H2s? | YES/NO |
+| 50 | Brand Identity: client differentiators (women-owned, 24/7 service, no hidden fees, etc.) woven verbatim into the 500-token chunks AND surfaced in the AI Summary Nugget? | YES/NO |
+| 51 | Topical Silo: page ends with a `Recommended Spoke Pages` section built from `missing_spokes` competitor anchor data? | YES/NO |
+| | **Score: X/51** | |
 
-Pages scoring below 39/48 must be revised before delivery. Items marked NO must include a note on what needs to be fixed.
+Pages scoring below 42/51 must be revised before delivery. Items marked NO must include a note on what needs to be fixed.
 
 ### Spam Resilience Priority: Technical Relevance > Human Tone
 In the 2025-2026 spam update cycle, Google is prioritizing **technical relevance density** (factual accuracy, entity coverage, structured data completeness) over "human-sounding" prose. A page that is factually perfect, entity-rich, and operationally detailed but "sounds like AI" will outperform a page with warm, conversational tone but thin substance.

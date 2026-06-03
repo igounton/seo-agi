@@ -86,7 +86,7 @@ These issues override the score and require fixing regardless:
 
 ## v1.7.1 -- 45-Point Pass/Fail Checklist
 
-In addition to the rubric above, every page must pass the SKILL.md 48-point YES/NO checklist (Section 14). Pages scoring below 39/48 require revision before delivery. The four checks added in v1.7.1:
+In addition to the rubric above, every page must pass the SKILL.md 51-point YES/NO checklist (Section 14). Pages scoring below 42/51 require revision before delivery. The four checks added in v1.7.1:
 
 - [ ] **#42 -- Meta Entity Isolation Check.** The entity set used in the brief was sourced from the bolded query-matched terms inside competitor SERP descriptions (`research.meta_entities`), not from generic body-content entity extraction. Snippet entities are the tokens Google's own snippet generator already validated as relevant.
 - [ ] **#43 -- N-Gram AI Alignment Check.** The AI Summary Nugget at the top of the page contains 2 or more bigrams or trigrams pulled verbatim from the top 3 ranking competitors' body text (`research.target_ngrams`). LLM retrieval scoring rewards token-window overlap with consensus phrasing.
@@ -102,3 +102,13 @@ Three new checks for the AI-Overview era. Pages scoring below 39/48 require revi
 - [ ] **#46 -- Trust Pilot Entity Profiling.** A Trust Pilot profile (or scheduled draft for one) exists for the target brand, with the page's exact service target bigrams (from `research.target_ngrams`) seeded into the profile description. See SKILL.md Section 11A for why Trustpilot now counts as Tier 1.
 - [ ] **#47 -- Off-Page Schema Mapping.** Companion content on Tier 1 properties (Cloud Pages, PRs, Medium, etc.) carries `Organization` and `Person` JSON-LD with explicit links back to the brand's GBP CID. This is the NavBoost-shuffle defense.
 - [ ] **#48 -- DOM-Visible Critical Data.** Pricing tables, capacity figures, schedules, and other primary data points appear in front-facing `<table>` markup or inline RDFa spans -- not buried solely in a JSON-LD block. Google's RAG pipeline (Gemini 3.5 Flash) extracts shards from the rendered DOM, not from `<head>` script tags.
+
+---
+
+## v1.9.1 -- Decision Fit, Brand Voice, Missing Spokes (51-Point)
+
+Three new checks for buyer-stage alignment, brand identity preservation, and topical silo completeness. Pages scoring below 42/51 require revision before delivery.
+
+- [ ] **#49 -- Decision Fit Check.** Does the heading structure map directly to the user's psychological buying stage (Research, Compare, or Buy) instead of just copying competitor H2s? A "best CRM 2026" page (Compare stage) needs comparison-shaped H2s. A "how to choose a CRM" page (Research stage) needs framework-shaped H2s. A "Salesforce pricing" page (Buy stage) needs decision-shaped H2s. Copy-paste of competitor headings is a fail -- the page must serve the searcher's job, not mirror the SERP.
+- [ ] **#50 -- Brand Identity Check.** Are the client's specific differentiators (provided via `--differentiators=` on `research.py` or in the brief) explicitly woven verbatim into the 500-token chunks to prevent generic AI homogenization? Each differentiator must appear at least once in body content, and the AI Summary Nugget at the top must surface at least one of them. Paraphrasing into marketing-flavored synonyms is a fail -- the exact phrase the client gave is the test.
+- [ ] **#51 -- Topical Silo Check.** Did the agent append a `## Recommended Spoke Pages` block at the bottom using the `missing_spokes` data extracted from competitor analysis? See `research.missing_spokes` in the research output. The list is the client's build-order priority for filling the topical silo gap, not link stubs to be written today. Tag uncertain slugs with `{{MANUAL CHECK: slug needed}}`.

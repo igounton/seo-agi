@@ -254,7 +254,26 @@ class DataForSEOClient:
             "word_count": self._count_words(page, markdown),
             "headings": self._extract_headings(page),
             "plain_text_size": len(markdown),
+            "links": self._extract_links(page),
         }
+
+    @staticmethod
+    def _extract_links(page_content: dict) -> list[dict]:
+        """Extract anchor text + URL pairs from the content_parsing topic
+        tree. DataForSEO stores links inside `primary_content[].urls[]`
+        on both main_topic and secondary_topic items, with each url object
+        carrying `url` and `anchor_text` fields. Used by missing_spokes
+        extraction in research.py (v1.9.1)."""
+        links: list[dict] = []
+        for bucket in ("main_topic", "secondary_topic"):
+            for topic in page_content.get(bucket) or []:
+                for entry in topic.get("primary_content") or []:
+                    for u in (entry or {}).get("urls") or []:
+                        anchor = ((u or {}).get("anchor_text") or "").strip()
+                        url = ((u or {}).get("url") or "").strip()
+                        if anchor and url:
+                            links.append({"text": anchor, "url": url})
+        return links
 
     @staticmethod
     def _extract_title(page_content: dict, markdown: str) -> str:

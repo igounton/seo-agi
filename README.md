@@ -1,4 +1,4 @@
-# seobuild-onpage v1.9.0
+# seobuild-onpage v1.9.1
 
 ### One command. Competitive data in. Ranking pages out.
 
@@ -9,6 +9,13 @@ claude install-skill gbessoni/seobuild-onpage
 Most SEO tools tell you what's wrong with your site. This one writes the pages.
 
 `/seoagi "airport parking JFK"` pulls the current SERP, analyzes what's ranking, finds the gaps in their content, and writes you a complete page -- with the heading structure, depth, FAQ section, and schema markup that actually competes. Not thin content. Not keyword-stuffed filler. Pages backed by live data from the tools the pros use.
+
+**New in v1.9.1 -- Decision Fit Mapping + Brand Voice + Missing Spoke Detection:**
+- **Brand differentiator injection** via `--differentiators` on `research.py` (e.g. `--differentiators="women-owned, 24/7 service, no hidden fees"`). Passes through to the brief output so the writing agent has strict brand constraints. Differentiators must be woven verbatim into the 500-token chunks and surfaced in the AI Summary Nugget -- paraphrased fluff fails the new Brand Identity check.
+- **Missing Spoke Detection** -- the research pipeline now extracts internal-link anchor text from the top 3 competitors, filters out navigational generics (Home, Contact Us, Privacy, FAQ, etc.) and image-link leakage, and outputs a ranked `missing_spokes` list. SKILL.md Section 12 now requires every generated page to append a `## Recommended Spoke Pages` section built from this data.
+- **Decision Fit Mapping** -- new checklist enforcement: heading structure must map to the user's psychological buying stage (Research / Compare / Buy) instead of copy-pasting competitor H2s.
+- **Execution Protocol now prompts for differentiators** if the user didn't supply them up front -- the agent stops and asks before writing rather than producing generic AI homogenization.
+- **51-point quality checklist** -- adds Decision Fit (#49), Brand Identity (#50), Topical Silo (#51) checks. Passing threshold raised to 42/51.
 
 **New in v1.9.0 -- Massive Web Render as primary content parser:**
 - **Massive Web Render** (render.joinmassive.com) is now the primary competitor content parser when `MASSIVE_API_TOKEN` is configured. Returns clean rendered markdown including JS-loaded content that DataForSEO's `content_parsing/live` endpoint misses.
@@ -30,14 +37,14 @@ Most SEO tools tell you what's wrong with your site. This one writes the pages.
 - **Primary + Secondary Intent Mapping (Orcas 1)** -- single-intent pages underperform. Every page now maps Primary intent (the question the user typed) into the first 500 tokens AND Secondary intent (the action funnel: compare, book, contact, calculate) into the next two chunks. Pages without a secondary action path fail the dual-intent check.
 - **The 410 Prune Protocol** -- on rewrites, every legacy URL gets an explicit status-code recommendation. 301 preserves equity when the topic survives. 410 prunes thin, cannibalizing, or out-of-topical-circle pages so they stop dragging the domain. Silent leave-as-is is no longer an acceptable output for a legacy URL audit.
 - **Local Codebase Contextual Linking** -- when the skill is run inside a project repo, it scans the local file structure (`.tsx`, `.md`, `.html`, etc.), detects the framework, injects semantic HTML directly into source files where appropriate, and emits `.htaccess` / Nginx / `next.config.js` redirect snippets for the 410 recommendations. The skill writes ranking pages, not just content briefs.
-- **48-point quality checklist** -- adds Meta Entity Isolation, N-Gram Alignment, Dual-Intent, and Status Code Governance checks.
+- **45-point quality checklist** -- adds Meta Entity Isolation, N-Gram Alignment, Dual-Intent, and Status Code Governance checks.
 
 **New in v1.6.0 -- ICP-Driven Content + Local Trust Signals:**
 - **Ideal Customer Persona (ICP) Integration** -- page briefs now require a defined ICP with demographics, psychographics, and specific pain points. Content maps to who it's actually for, not a generic audience.
 - **Deep Entity History & Identity Tags** -- founding dates, generational ownership, and identity attributes (women-owned, veteran-owned, family-owned) are now explicit entity signals. Maps directly to GBP tags and conversational AI filtering.
 - **The Self-Placement Rule** -- ranking the client #1 in a listicle is now an approved tactic, provided the entry is strictly objective with a defined use-case and honest tradeoffs.
 - **Keyword Cannibalization Governance** -- strict rule against creating pages that compete with existing URLs for the same intent. Sales-focused duplicates of informational pages get tagged with `noindex` recommendation.
-- **48-point quality checklist** adding ICP alignment, entity history, and cannibalization checks.
+- **41-point quality checklist** adding ICP alignment, entity history, and cannibalization checks.
 
 **New in v1.5.0 -- Forensic SEO + Structural Signals:**
 - **Semantic HTML Containers** -- generated HTML now uses `<article>`, `<section>`, `<aside>`, `<main>` instead of generic `<div>`. Google's crawler uses these elements to identify the Main Content zone for passage extraction and AI retrieval.
@@ -47,7 +54,7 @@ Most SEO tools tell you what's wrong with your site. This one writes the pages.
 - **Query Fan-Out (QFO) Facet Coverage** -- each 500-token chunk now targets a specific AI sub-query. 40% of future traffic arrives via AI fan-out from a single user prompt.
 - **Forensic EMQ Check** -- EMQ in H1 is conditionally required when 2/3 top competitors use it. Competitive context overrides the default entity-based heading rule.
 - **Orcas One CVR Modeling** -- keywords now ranked by estimated conversion value, not raw volume. Position 1 at 4.5% CVR vs position 7 at 2%.
-- **48-point quality checklist** with QDD, Site vs. Page, EMQ ratio, and QFO facet checks.
+- **38-point quality checklist** with QDD, Site vs. Page, EMQ ratio, and QFO facet checks.
 
 **New in v1.4.0 -- March 2026 Update Protocols:**
 - **NavBoost Geographic Click Relevance** -- pages now reranked by geographic click patterns. Local pages require neighborhood-level specificity, not just city names. Observed across SEO X community testing.
@@ -109,7 +116,7 @@ SEO-AGI:
   12. For rewrites: evaluates each legacy URL and recommends 301 (when topic
       survives and equity should consolidate) or 410 (when the URL is thin,
       cannibalizing, or out-of-circle and should be pruned)
-  13. Validates against 48-point quality checklist
+  13. Validates against 51-point quality checklist
   14. Prints scorecard so you see exactly what passed
 ```
 
@@ -164,7 +171,7 @@ This isn't a wrapper around "write me an SEO article." The skill encodes strateg
 - "Not For You" block: honest section telling readers when this option is a bad fit (trust signal competitors skip)
 - Information Gain Test: every page must contain content not found in the top 10 Google results
 
-**The 48-point quality checklist every page runs through (selected highlights):**
+**The 51-point quality checklist every page runs through (selected highlights):**
 - Information gain over top 10 Google results? Check.
 - Reddit Test: would a practitioner upvote this? Check.
 - Core answer in first 150 words? Check.
@@ -208,8 +215,11 @@ This isn't a wrapper around "write me an SEO article." The skill encodes strateg
 - Trust Pilot entity profiling with exact service target bigrams? Check.
 - Off-page assets mapped with cross-cutting Organization/Person schema to GBP? Check.
 - Critical data points visible in raw HTML DOM (not buried solely in JSON-LD)? Check.
+- Decision Fit -- heading structure maps to buyer stage (Research/Compare/Buy), not copied competitor H2s? Check.
+- Brand Identity -- client differentiators woven verbatim into chunks + AI Summary Nugget? Check.
+- Topical Silo -- `Recommended Spoke Pages` section appended from `missing_spokes`? Check.
 
-Pages scoring below 39/48 get flagged with specific items to fix. The scorecard is printed at the end of every output so you see exactly what passed.
+Pages scoring below 42/51 get flagged with specific items to fix. The scorecard is printed at the end of every output so you see exactly what passed.
 
 ---
 
