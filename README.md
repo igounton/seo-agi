@@ -1,4 +1,4 @@
-# seobuild-onpage v1.9.1
+# seobuild-onpage v2.0.0
 
 ### One command. Competitive data in. Ranking pages out.
 
@@ -9,6 +9,13 @@ claude install-skill gbessoni/seobuild-onpage
 Most SEO tools tell you what's wrong with your site. This one writes the pages.
 
 `/seoagi "airport parking JFK"` pulls the current SERP, analyzes what's ranking, finds the gaps in their content, and writes you a complete page -- with the heading structure, depth, FAQ section, and schema markup that actually competes. Not thin content. Not keyword-stuffed filler. Pages backed by live data from the tools the pros use.
+
+**New in v2.0.0 -- The Two-Gate AEO & DOM Flattening Protocols:**
+- **The Two-Gate Paradigm Shift** -- traditional metrics like meta descriptions and title tags no longer dictate AI Overview success. The agent now optimizes primarily for Gate 1 (Retrieval Pool Entry) and Gate 2 (Selected Citation Extraction). Entering the candidate pool and getting your passage selected for citation are two different jobs; v2.0.0 optimizes both explicitly.
+- **Anti-Paragraph Snippet Answer Rule** -- strict ban on bare `<p>` tags for the primary 2-3 sentence answer beneath an H2. Bare paragraphs are routinely skipped for first-position citations. Primary answers must use block-level structural containers (`div.answer`, `blockquote`, `dl`/`dd`, leading table row, or RDFa/Microdata span block).
+- **DOM Nesting Depth Flattening** -- shallow-DOM enforcement. Deeply nested visual-builder output (Elementor, Divi, etc.) is penalized at runtime for node-processing cost and Main Content dilution. Generated layout targets a max ~3 nesting levels; competitor pages exceeding it are flagged as `DOM_FLATTENING_OPPORTUNITY`.
+- **Goldilocks Entity Synergy** -- subheadings maintain a precise entity density, strategically repeating core associated entities across H2/H3s to build extraction synergy for citation algorithms. Not too sparse, not stuffed.
+- **55-point quality checklist** -- adds Anti-Paragraph Snippet, DOM Flattening Depth, Goldilocks Entity Synergy, and Two-Gate Extraction Pass checks. Passing threshold raised to 46/55.
 
 **New in v1.9.1 -- Decision Fit Mapping + Brand Voice + Missing Spoke Detection:**
 - **Brand differentiator injection** via `--differentiators` on `research.py` (e.g. `--differentiators="women-owned, 24/7 service, no hidden fees"`). Passes through to the brief output so the writing agent has strict brand constraints. Differentiators must be woven verbatim into the 500-token chunks and surfaced in the AI Summary Nugget -- paraphrased fluff fails the new Brand Identity check.
@@ -116,7 +123,7 @@ SEO-AGI:
   12. For rewrites: evaluates each legacy URL and recommends 301 (when topic
       survives and equity should consolidate) or 410 (when the URL is thin,
       cannibalizing, or out-of-circle and should be pruned)
-  13. Validates against 51-point quality checklist
+  13. Validates against 55-point quality checklist
   14. Prints scorecard so you see exactly what passed
 ```
 
@@ -171,7 +178,7 @@ This isn't a wrapper around "write me an SEO article." The skill encodes strateg
 - "Not For You" block: honest section telling readers when this option is a bad fit (trust signal competitors skip)
 - Information Gain Test: every page must contain content not found in the top 10 Google results
 
-**The 51-point quality checklist every page runs through (selected highlights):**
+**The 55-point quality checklist every page runs through (selected highlights):**
 - Information gain over top 10 Google results? Check.
 - Reddit Test: would a practitioner upvote this? Check.
 - Core answer in first 150 words? Check.
@@ -218,8 +225,12 @@ This isn't a wrapper around "write me an SEO article." The skill encodes strateg
 - Decision Fit -- heading structure maps to buyer stage (Research/Compare/Buy), not copied competitor H2s? Check.
 - Brand Identity -- client differentiators woven verbatim into chunks + AI Summary Nugget? Check.
 - Topical Silo -- `Recommended Spoke Pages` section appended from `missing_spokes`? Check.
+- Anti-Paragraph Snippet -- primary H2 answers in block containers, not bare `<p>`? Check.
+- DOM Flattening -- layout flat (max ~3 nesting levels), no wrapper-node bloat? Check.
+- Goldilocks Entity Synergy -- subheadings repeat core entity pairings, not generic text? Check.
+- Two-Gate Extraction -- satisfies Gate 1 retrieval AND Gate 2 citation extraction? Check.
 
-Pages scoring below 42/51 get flagged with specific items to fix. The scorecard is printed at the end of every output so you see exactly what passed.
+Pages scoring below 46/55 get flagged with specific items to fix. The scorecard is printed at the end of every output so you see exactly what passed.
 
 ---
 

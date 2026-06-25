@@ -266,6 +266,105 @@ def extract_missing_spokes(
     ]
 
 
+# v2.0.0 -- Structural directives the writing agent must follow when it
+# builds the page layout. research.py does not emit page HTML itself; it is
+# the data layer, and the writing agent is the "content output builder."
+# This block is that builder's formatting configuration: it tells the agent
+# to wrap primary snippet answers in flat block containers (never bare <p>),
+# cap DOM nesting depth, and pair entities in subheadings. See SKILL.md
+# "NEW IN v2.0.0" and Sections 3 + 6.
+STRUCTURAL_DIRECTIVES = {
+    "snippet_answer_container": (
+        "block-level structural wrapper (div.answer / blockquote / dl+dd / "
+        "leading table row / RDFa-Microdata span block) -- NEVER a bare <p> tag"
+    ),
+    "anti_paragraph_rule": True,
+    "max_dom_nesting_depth": 3,
+    "subheading_entity_synergy": (
+        "repeat the core entity + tightest semantic neighbors across H2/H3 "
+        "subheadings; ban generic 'Overview' / 'Details' / 'More Info' headings"
+    ),
+    "two_gate_target": (
+        "Gate 1 = retrieval-pool entry (relevance, entity coverage, "
+        "crawler-visible flat structure); Gate 2 = selected-citation "
+        "extraction (liftable block-level answer units)"
+    ),
+}
+
+# Container tags that increase DOM nesting depth. HTML void elements never do.
+_VOID_TAGS = frozenset(
+    [
+        "area", "base", "br", "col", "embed", "hr", "img", "input",
+        "link", "meta", "param", "source", "track", "wbr",
+    ]
+)
+
+
+def measure_dom_depth(html: str) -> int:
+    """Maximum nesting depth of container tags in an HTML fragment.
+
+    Pure, dependency-free, stack-based. Void elements (<br>, <img>, ...)
+    and self-closing tags do not increase depth. Used to flag deeply
+    nested competitor layouts during the v2.0.0 DOM-flattening audit.
+    """
+    if not html:
+        return 0
+    depth = 0
+    max_depth = 0
+    tag_re = re.compile(r"<(/?)([a-zA-Z][a-zA-Z0-9]*)\b[^>]*?(/?)>")
+    for m in tag_re.finditer(html):
+        closing, tag, selfclose = m.group(1), m.group(2).lower(), m.group(3)
+        if closing:
+            depth = max(0, depth - 1)
+        elif selfclose or tag in _VOID_TAGS:
+            continue
+        else:
+            depth += 1
+            max_depth = max(max_depth, depth)
+    return max_depth
+
+
+def flag_deep_nesting(
+    content_data: list,
+    organic: list,
+    top_n: int = 3,
+    max_depth: int = 3,
+) -> dict:
+    """Flag top-N competitors whose rendered DOM exceeds the v2.0.0
+    flattening target.
+
+    Operates on raw HTML when a parser provides it (`content["raw_html"]`).
+    DataForSEO content_parsing returns a topic tree and Massive returns
+    markdown -- neither exposes raw HTML today -- so this reports
+    `not_assessed` rather than fabricating a depth number. The analyzer is
+    forward-compatible: the moment a parser supplies raw HTML, the flag
+    activates with no further changes.
+    """
+    flagged = []
+    assessed = 0
+    for i, content in enumerate((content_data or [])[:top_n]):
+        if not content:
+            continue
+        html = content.get("raw_html")
+        if not html:
+            continue
+        assessed += 1
+        depth = measure_dom_depth(html)
+        if depth > max_depth:
+            url = (organic[i] if i < len(organic) else {}).get("url", "")
+            flagged.append({"url": url, "max_depth": depth})
+    return {
+        "target_max_depth": max_depth,
+        "assessed_count": assessed,
+        "flagged": flagged,
+        "status": (
+            "assessed"
+            if assessed
+            else "not_assessed (no raw HTML from current parsers)"
+        ),
+    }
+
+
 def detect_secondary_intent(keyword: str, primary_intent: str, serp_data: dict) -> str:
     """Map secondary intent per the Orcas 1 dual-intent model. The primary
     intent answers 'what did the user type'. The secondary intent answers
@@ -388,6 +487,13 @@ def load_mock_data(keyword: str) -> dict:
         "target_ngrams": {"bigrams": [], "trigrams": []},
         "differentiators": [],
         "missing_spokes": [],
+        "structural_directives": STRUCTURAL_DIRECTIVES,
+        "dom_nesting": {
+            "target_max_depth": 3,
+            "assessed_count": 0,
+            "flagged": [],
+            "status": "not_assessed (mock data)",
+        },
         "serp": serp_data,
         "related_keywords": related_kw,
         "analysis": {
@@ -449,6 +555,13 @@ def run_research(args) -> dict:
             "target_ngrams": {"bigrams": [], "trigrams": []},
             "differentiators": _parse_differentiators(getattr(args, "differentiators", None)),
             "missing_spokes": [],
+            "structural_directives": STRUCTURAL_DIRECTIVES,
+            "dom_nesting": {
+                "target_max_depth": 3,
+                "assessed_count": 0,
+                "flagged": [],
+                "status": "not_assessed (no-creds fallback)",
+            },
             "serp": {"organic": [], "paa": [], "featured_snippet": None},
             "related_keywords": [],
             "analysis": {
@@ -559,6 +672,9 @@ def run_research(args) -> dict:
         content_data, organic, top_n_competitors=3, top_k=20
     )
 
+    # Step 7: v2.0.0 -- DOM flattening competitor audit
+    dom_nesting = flag_deep_nesting(content_data, organic, top_n=3, max_depth=3)
+
     # Assemble research output. Surface the new signals at top level for
     # easy brief consumption -- do not bury them inside `analysis`.
     content_parser_summary = (
@@ -577,6 +693,8 @@ def run_research(args) -> dict:
         "target_ngrams": target_ngrams,
         "differentiators": differentiators,
         "missing_spokes": missing_spokes,
+        "structural_directives": STRUCTURAL_DIRECTIVES,
+        "dom_nesting": dom_nesting,
         "serp": serp_data,
         "related_keywords": related_kw[:20],
         "analysis": analysis,
@@ -728,6 +846,26 @@ def format_compact(research: dict) -> str:
         for s in spokes[:15]:
             lines.append(f"  - {s['anchor']} ({s['competitor_count']}x)")
 
+    # Structural directives (v2.0.0)
+    sd = research.get("structural_directives", {})
+    if sd:
+        lines.append("\n## Structural Directives (v2.0.0 -- agent must obey)")
+        lines.append(f"  - Snippet answer container: {sd.get('snippet_answer_container', '?')}")
+        lines.append(f"  - Max DOM nesting depth: {sd.get('max_dom_nesting_depth', '?')}")
+        lines.append(f"  - Subheading entity synergy: {sd.get('subheading_entity_synergy', '?')}")
+        lines.append(f"  - Two-gate target: {sd.get('two_gate_target', '?')}")
+
+    # DOM nesting audit (v2.0.0)
+    dn = research.get("dom_nesting", {})
+    if dn:
+        lines.append("\n## DOM Flattening Audit (v2.0.0)")
+        lines.append(f"  Status: {dn.get('status', '?')}")
+        flagged = dn.get("flagged", [])
+        if flagged:
+            lines.append(f"  Flagged (depth > {dn.get('target_max_depth', 3)}):")
+            for f in flagged:
+                lines.append(f"    - {f.get('url', '?')} (depth {f.get('max_depth', '?')})")
+
     return "\n".join(lines)
 
 
@@ -752,6 +890,8 @@ def main():
             "target_ngrams": research.get("target_ngrams", {}),
             "differentiators": research.get("differentiators", []),
             "missing_spokes": research.get("missing_spokes", []),
+            "structural_directives": research.get("structural_directives", {}),
+            "dom_nesting": research.get("dom_nesting", {}),
             "word_count_stats": analysis.get("word_count_stats"),
             "paa_questions": analysis.get(
                 "paa_questions",

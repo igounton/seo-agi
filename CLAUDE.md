@@ -54,6 +54,14 @@ The SKILL.md is the living document. It contains:
   (Google Sites, Medium, Subreddits, Google Sheets, LinkedIn). Quality gates
   apply equally to off-page content -- thin tributaries net-harm the money
   page's entity signal. Generated via `scripts/tributary_gen.py`.
+- **Two-Gate AEO & DOM Flattening** (v2.0.0): optimization targets
+  Gate 1 (retrieval-pool entry) + Gate 2 (citation extraction).
+  Anti-Paragraph rule (primary H2 answers in block containers, never
+  bare `<p>`), DOM nesting depth flattening (max ~3 levels), Goldilocks
+  entity synergy in subheadings. research.py emits `structural_directives`
+  to the agent and a `flag_deep_nesting()` competitor audit
+  (`measure_dom_depth()` pure analyzer; reports not_assessed without raw
+  HTML). 55-point checklist, threshold 46/55.
 - **Decision Fit + Brand Voice + Missing Spokes** (v1.9.1):
   `--differentiators` CLI flag flows brand USPs into the brief output.
   `extract_missing_spokes()` mines top 3 competitors' internal anchors

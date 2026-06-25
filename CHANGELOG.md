@@ -2,6 +2,25 @@
 
 All notable changes to seo-agi are documented here.
 
+## [2.0.0] - 2026-06-03
+
+Major release. Reframes the optimization target around the Two-Gate AEO model.
+
+### Added
+- **The Two-Gate AEO Framework** (SKILL.md, new "NEW IN v2.0.0" section before Section 0). Optimization now targets Gate 1 (Retrieval Pool Entry) and Gate 2 (Selected Citation Extraction) explicitly. Meta-tag tuning is demoted -- it does not drive AI Overview success.
+- **Anti-Paragraph Snippet Answer Rule** (Section 3). Primary 2-3 sentence answers beneath an H2 must NOT use bare `<p>` tags -- they are skipped for first-position citations. Must use block-level structural containers (`div.answer`, `blockquote`, `dl`/`dd`, leading table row, RDFa/Microdata span block).
+- **DOM Nesting Depth Flattening** (Section 6). Shallow-DOM enforcement, target max ~3 nesting levels. Visual-builder wrapper bloat (Elementor/Divi) is penalized at runtime. Competitors exceeding the target are flagged `DOM_FLATTENING_OPPORTUNITY`.
+- **Goldilocks Entity Synergy** (Section 6). Subheadings repeat core associated entity pairings to build citation-extraction synergy; generic subheadings are banned.
+- **`scripts/research.py` additions**:
+  - `STRUCTURAL_DIRECTIVES` block now in every research payload (live, mock, no-creds, brief) -- the formatting configuration the writing agent reads (flat block snippet containers, anti-`<p>`, max depth, entity synergy, two-gate target).
+  - `measure_dom_depth(html)` -- pure stack-based max-nesting-depth analyzer (void/self-closing tags excluded).
+  - `flag_deep_nesting()` -- competitor DOM-flattening audit. Activates on raw HTML when a parser supplies it; reports `not_assessed` (never a fabricated number) otherwise, since DataForSEO content_parsing and Massive markdown do not expose raw HTML today. Forward-compatible.
+- **55-point quality checklist** with #52 Anti-Paragraph Snippet, #53 DOM Flattening Depth, #54 Goldilocks Entity Synergy, #55 Two-Gate Extraction Pass. Passing threshold raised to 46/55.
+- 11 new tests in `tests/test_research_v200.py` (DOM-depth measurement edge cases, deep-nesting flag with/without raw HTML, top-N limiting, structural-directives shape).
+
+### Note on scope
+`research.py` is the data layer, not a page-HTML generator -- it has no `<p>`-emitting code to swap. The v2.0.0 layout rules (flat blocks, anti-`<p>`, Goldilocks) are enforced at the agent layer via SKILL.md + the `structural_directives` payload the agent consumes. The competitor DOM-nesting audit ships ready and unit-tested; it reports `not_assessed` until a parser provides raw HTML.
+
 ## [1.9.1] - 2026-05-21
 
 ### Added

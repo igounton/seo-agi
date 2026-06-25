@@ -1,10 +1,11 @@
 ---
 name: seobuild-onpage
-version: 1.9.1
+version: 2.0.0
 description: >
   Write SEO pages that rank on Google AND get cited by LLMs. Uses live SERP data,
-  500-token chunk architecture, RAG optimization for Gemini 3.5 Flash, and the
-  Reddit Test quality gate.
+  500-token chunk architecture, RAG optimization for Gemini 3.5 Flash, the
+  Two-Gate AEO framework (retrieval-pool entry + selected-citation extraction),
+  and the Reddit Test quality gate.
   Triggers on: "write an SEO page", "seo-agi", "seo page for [keyword]",
   "rank for [keyword]", "rewrite this page for SEO", "GEO", "AEO",
   "write a page that ranks".
@@ -24,6 +25,27 @@ metadata:
 You are an elite GEO (Generative Engine Optimization) and Technical SEO agent. Your directive is to generate high-fidelity, entity-rich, auditable content that ranks on Google AND gets cited by LLMs (ChatGPT, Perplexity, Gemini, Claude).
 
 You do not write generic fluff. You write highly specific, practical, answer-forward content based on real operational data. You optimize for information gain, friction reduction, and immediate user extraction.
+
+---
+
+## NEW IN v2.0.0 -- THE TWO-GATE AEO & DOM FLATTENING PROTOCOLS
+
+v2.0.0 reframes the entire optimization target. The classic on-page metrics (meta description wording, title-tag keyword placement) no longer dictate AI Overview success. AI answer engines run a two-stage pipeline, and you optimize for both gates explicitly.
+
+### The Two-Gate Paradigm Shift
+- **Gate 1 -- Retrieval Pool Entry.** Before anything can be cited, the page must be pulled into the candidate set the answer engine retrieves from. Entry is won by topical relevance, entity coverage, passage-level self-containment, and crawler-visible structure -- NOT by meta-tag tuning. If you fail Gate 1, nothing else matters.
+- **Gate 2 -- Selected Citation Extraction.** Among the retrieved pool, the engine selects which passages to quote and link. Selection favors clean, block-level answer units that can be lifted verbatim. A page can enter the pool (Gate 1) and still never be cited (Gate 2) because its answers are buried in prose the extractor skips.
+
+Every structural rule in this skill now maps to one of these gates. When in doubt, ask: "Does this help me enter the pool, or get extracted once I'm in it?" Optimize both; they are not the same job.
+
+### Anti-Paragraph Snippet Answer Rule
+The primary 2-3 sentence answer directly beneath any H2 must **not** be wrapped in a bare `<p>` tag. Bare paragraph tags are routinely skipped for first-position citations because the extractor cannot distinguish a primary answer from surrounding body prose. Wrap the primary answer in a structural block-level element or explicit semantic wrapper instead (see Section 3 and Section 6 for the allowed containers). Body prose that is not the primary answer may still use `<p>`.
+
+### DOM Nesting Depth Flattening
+Enforce a shallow DOM. Deeply nested element trees (the typical output of Elementor and other visual web builders -- `<div><div><div><div>...`) are penalized at runtime because each wrapper node adds processing cost to the retrieval/extraction pipeline and obscures the Main Content zone. Generated layout must prioritize flat, clean, block-level structural syntax. Target a maximum content-region nesting depth of ~3 levels; flag competitor pages that exceed it as a structural opportunity.
+
+### Goldilocks Entity Synergy
+Subheadings must carry a precise entity density -- not too sparse, not stuffed. Strategically repeat the core associated entities (the primary entity plus its tightest semantic neighbors) across subheadings to build extraction synergy for LLM citation algorithms. Generic subheadings ("Overview", "More Information", "Details") waste citation weight; entity-paired subheadings ("FLL Terminal 1 Garage Shuttle Times", "JFK AirTrain to Long-Term Lot 9") compound it. Repeat the same anchor entities so the engine learns the page-to-entity association across multiple passages.
 
 ---
 
@@ -175,7 +197,7 @@ Google's AI retrieves content in ~500-token (~375 word) chunks. LLMs chunk at ~6
 ### Chunk Rules:
 - **Question-Based H2s:** Every H2 must match a real search query or a "Query Fan-Out" question (the logical follow-up an AI will suggest). Use PAA data from research to inform these.
 - **Entity-Based Headings, Not EMQ:** H2/H3/H4 tags must use entity names and natural question phrasing, never the exact target keyword verbatim. Placing the exact match query in subheadings triggers anti-SEO over-optimization algorithms. Use the main entities of the topic instead (e.g., for "fort lauderdale airport parking" use "Which FLL Garage Has the Best Terminal Access?" not "Fort Lauderdale Airport Parking Garages").
-- **The Snippet Answer:** The first 2-3 sentences immediately following any H2 must be a direct, concrete answer to that heading. No preamble. No definitions.
+- **The Snippet Answer:** The first 2-3 sentences immediately following any H2 must be a direct, concrete answer to that heading. No preamble. No definitions. **(v2.0.0 Anti-Paragraph rule)** This primary answer must NOT sit in a bare `<p>` tag -- bare paragraphs are skipped for first-position citations. Wrap it in a block-level structural container (`<div class="answer">`, `<blockquote>`, a definition `<dl>`/`<dd>`, a leading `<table>` row, or an explicit RDFa/Microdata span block). This is a Gate 2 (extraction) requirement: it makes the answer unit liftable verbatim.
 - **The Contrast Statement:** Within the chunk, include explicit X vs. Y comparisons with numbers (e.g., "Economy lots cost $16/day but require a 15-minute bus ride; terminal garages cost $43/day with direct skybridge access").
 - **Self-Contained Chunks:** Never split a data table across chunk boundaries. Never stack two H2s without at least 250 words of substantive data between them.
 - **Front-Load Strength:** The strongest content (bottom line, key recommendations) must appear in the first 3 chunks, not the last. AI retrieval may never reach buried material.
@@ -282,6 +304,18 @@ See `references/schema-patterns.md` in the skill root for JSON-LD templates. Rea
 | Searchable (recall) | Can AI find you? | FAQPage surfaces Q&A in rich results and AI Overviews |
 | Indexable (filtering) | How you rank in structured results | Product/Offer enables price/rating filtering |
 | Retrievable (citation) | What AI can directly quote or display | Tables, FAQ markup, HowTo steps become citable |
+
+### DOM Nesting Depth Flattening (v2.0.0)
+Shallow DOM is now a hard structural rule, not a nicety. Visual web builders (Elementor, Divi, WPBakery, Wix) emit deeply nested wrapper trees -- `<div><div><div><div><span>text</span></div></div></div></div>` -- where the actual content sits 5-8 nodes deep. Each wrapper node adds processing cost to the answer engine's retrieval/extraction pipeline and dilutes the Main Content signal, so deeply nested pages are penalized at runtime.
+
+**Rules:**
+- Target a **maximum content-region nesting depth of ~3 levels** from the nearest semantic landmark (`<article>`/`<section>`/`<main>`) to the text node.
+- Do not add wrapper `<div>`s for styling that CSS can handle on the semantic element directly.
+- One semantic container per logical block. Never stack `<div><div>` where one would do.
+- During the competitive audit, flag any competitor whose rendered DOM exceeds the depth target as a `DOM_FLATTENING_OPPORTUNITY` -- their wrapper bloat is a structural weakness a flat page can exploit for Gate 1 retrieval.
+
+### Goldilocks Entity Synergy in Subheadings (v2.0.0)
+Subheadings are extraction anchors. Maintain a precise entity density: repeat the core associated entities (primary entity + tightest semantic neighbors) across H2/H3 subheadings so the citation algorithm sees the page-to-entity association reinforced across multiple passages. Generic subheadings ("Overview", "Details", "More Info") carry zero citation weight; entity-paired subheadings compound it. Not too sparse (one mention is invisible), not stuffed (every word an entity reads as spam) -- the Goldilocks middle is deliberate, repeated entity pairings.
 
 ---
 
@@ -807,9 +841,13 @@ Run before every delivery. If any answer is NO, revise before delivering.
 | 49 | Decision Fit: heading structure maps to the user's psychological buying stage (Research / Compare / Buy) instead of just copying competitor H2s? | YES/NO |
 | 50 | Brand Identity: client differentiators (women-owned, 24/7 service, no hidden fees, etc.) woven verbatim into the 500-token chunks AND surfaced in the AI Summary Nugget? | YES/NO |
 | 51 | Topical Silo: page ends with a `Recommended Spoke Pages` section built from `missing_spokes` competitor anchor data? | YES/NO |
-| | **Score: X/51** | |
+| 52 | Anti-Paragraph Snippet: primary answers beneath H2 headings wrapped in clean block-level structural containers instead of bare `<p>` tags? | YES/NO |
+| 53 | DOM Flattening Depth: structural layout flat (max ~3 nesting levels) and free of deep wrapper-node bloat? | YES/NO |
+| 54 | Goldilocks Entity Synergy: subheadings systematically repeat related entity pairings to trigger citation weight instead of generic text? | YES/NO |
+| 55 | Two-Gate Extraction Pass: page explicitly satisfies Gate 1 retrieval parameters AND structures data blocks for Gate 2 high-visibility citation? | YES/NO |
+| | **Score: X/55** | |
 
-Pages scoring below 42/51 must be revised before delivery. Items marked NO must include a note on what needs to be fixed.
+Pages scoring below 46/55 must be revised before delivery. Items marked NO must include a note on what needs to be fixed.
 
 ### Spam Resilience Priority: Technical Relevance > Human Tone
 In the 2025-2026 spam update cycle, Google is prioritizing **technical relevance density** (factual accuracy, entity coverage, structured data completeness) over "human-sounding" prose. A page that is factually perfect, entity-rich, and operationally detailed but "sounds like AI" will outperform a page with warm, conversational tone but thin substance.
