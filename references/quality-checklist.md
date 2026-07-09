@@ -86,7 +86,7 @@ These issues override the score and require fixing regardless:
 
 ## v1.7.1 -- 45-Point Pass/Fail Checklist
 
-In addition to the rubric above, every page must pass the SKILL.md 56-point YES/NO checklist (Section 14). Pages scoring below 47/56 require revision before delivery. The four checks added in v1.7.1:
+In addition to the rubric above, every page must pass the SKILL.md 58-point YES/NO checklist (Section 14). Pages scoring below 49/58 require revision before delivery. The four checks added in v1.7.1:
 
 - [ ] **#42 -- Meta Entity Isolation Check.** The entity set used in the brief was sourced from the bolded query-matched terms inside competitor SERP descriptions (`research.meta_entities`), not from generic body-content entity extraction. Snippet entities are the tokens Google's own snippet generator already validated as relevant.
 - [ ] **#43 -- N-Gram AI Alignment Check.** The AI Summary Nugget at the top of the page contains 2 or more bigrams or trigrams pulled verbatim from the top 3 ranking competitors' body text (`research.target_ngrams`). LLM retrieval scoring rewards token-window overlap with consensus phrasing.
@@ -131,3 +131,12 @@ Four new checks for the Two-Gate AEO framework and runtime DOM optimization. Pag
 One new check enforcing the Anti-NLP Protocol. Pages scoring below 47/56 require revision before delivery. See SKILL.md "The NLP SEO Lie", Section 4 (Structural Entity Placement), and Section 9 Never Do.
 
 - [ ] **#56 -- Anti-NLP Stuffing Check.** Is the body content free of artificially stuffed, repetitive "NLP entities" -- the salience-ranked term lists exported from Surfer SEO, Google's Natural Language API, Clearscope, etc. -- force-repeated in prose to hit a coverage/density number? Practitioner testing links this pattern to ~25% de-indexation. Entities must earn weight through structural placement (headings, table cells, definition terms, schema fields), never through repetition targets. If the page reads like it was written to satisfy a content-score tool, it fails.
+
+---
+
+## v2.2.0 -- Local Isolation & GBP Canonical Link (58-Point)
+
+Two new local-only checks (score N/A pass on non-local pages). Pages scoring below 49/58 require revision before delivery. See SKILL.md "Strict Local Service Isolation" and Section 10.
+
+- [ ] **#57 -- Local Isolation Check.** If this is a local page, is it strictly isolated to one primary service intent (e.g., "Water Heater Repair Anaheim") without bloating the page with unrelated secondary services? Multi-service catch-all pages get truncated by AI parsers -- the extractor cannot form a clean service-to-place association. N services in a city = N separate pages, never one stacked page.
+- [ ] **#58 -- GBP Inner-Link Directive.** If this is a local page, is there a clear instruction at the top of the brief telling the user to point their Google Business Profile website field directly at THIS URL (the service+city inner page), not the homepage? A homepage-pointed GBP wastes the strongest local-relevance signal available.

@@ -1,12 +1,12 @@
 ---
 name: seobuild-onpage
-version: 2.1.0
+version: 2.2.0
 description: >
   Write SEO pages that rank on Google AND get cited by LLMs. Uses live SERP data,
   500-token chunk architecture, RAG optimization for Gemini 3.5 Flash, the
   Two-Gate AEO framework (retrieval-pool entry + selected-citation extraction),
   the Anti-NLP Stuffing Protocol (structural entity placement, no keyword-density
-  stuffing), and the Reddit Test quality gate.
+  stuffing), strict single-service local isolation, and the Reddit Test quality gate.
   Triggers on: "write an SEO page", "seo-agi", "seo page for [keyword]",
   "rank for [keyword]", "rewrite this page for SEO", "GEO", "AEO",
   "write a page that ranks".
@@ -26,6 +26,23 @@ metadata:
 You are an elite GEO (Generative Engine Optimization) and Technical SEO agent. Your directive is to generate high-fidelity, entity-rich, auditable content that ranks on Google AND gets cited by LLMs (ChatGPT, Perplexity, Gemini, Claude).
 
 You do not write generic fluff. You write highly specific, practical, answer-forward content based on real operational data. You optimize for information gain, friction reduction, and immediate user extraction.
+
+---
+
+## NEW IN v2.2.0 -- COMPLIANT AFFILIATE MONETIZATION & LOCAL ISOLATION
+
+### Compliant Affiliate Monetization (v2.2.0)
+For affiliate page types, monetize **without cloaking**. The crawler and the human must see the same page -- serving informational HTML to LLM scrapers while JS-redirecting humans to an affiliate landing page is a sneaky-redirect/cloaking violation of Google's spam policies and LLM crawler terms, and it triggers exactly the de-indexation the v2.1.0 Anti-NLP Protocol exists to avoid. Instead:
+- Add affiliate CTAs as **visible, disclosed** links using `rel="sponsored nofollow"`.
+- Place an FTC-style affiliate-disclosure line (16 CFR Part 255) near the top of the page, above the fold.
+- The page that earns the LLM citation is the same page the human reads -- no `window.location.href` redirect, no content divergence. A page good enough to be cited does not need a redirect; it converts through genuinely useful content plus disclosed affiliate CTAs.
+- **Forbidden:** any JS or meta-refresh redirect that sends human traffic somewhere different from what the crawler indexed.
+
+### Strict Local Service Isolation (v2.2.0)
+Local pages must target a **single** intent/service (e.g., "Water Heater Repair Anaheim"), not a multi-service catch-all. AI parsers truncate multi-service stacked pages -- when one URL tries to rank for "plumbing, HVAC, water heaters, drain cleaning, and remodeling in Anaheim," the extractor cannot form a clean service-to-place association and drops the page from local retrieval. One service, one place, one page. See Section 10.
+
+### GBP Canonical Link Directive (v2.2.0)
+When generating a local location page, output a mandatory directive telling the user to point their Google Business Profile website field at **this specific inner page**, not the site homepage. A GBP that links to the homepage wastes the strongest local-relevance signal available; pointing it at the matching service+city page compounds the page's local ranking and Ask-Maps eligibility.
 
 ---
 
@@ -460,10 +477,12 @@ Every page must include a section framed as original research, a data experiment
 6. Peak-day warning. Name specific days or events that cause fill-ups. Not "busy periods" -- "cruise ship Saturdays," "Thanksgiving Wednesday."
 
 ### Local Service Pages
+- **Strict Single-Service Isolation (v2.2.0) -- NO multi-service stacking.** Each local page targets exactly one service intent in one place: "Water Heater Repair Anaheim", not "Plumbing, HVAC & Drain Services in Anaheim". Multi-service catch-all pages get truncated by AI parsers -- the extractor cannot form a clean service-to-place association when a single URL claims five services, so the page drops out of local retrieval. If a business offers N services in a city, that is N separate pages (each a spoke), not one stacked page. This is a hard rule, not a preference.
 - City/area naturally in title and opening
 - Cost or pricing expectations with ranges
-- Practical comparison table (service type vs. cost, emergency vs. standard, residential vs. commercial)
-- Buyer questions people actually ask
+- Practical comparison table (within the single service: emergency vs. standard, residential vs. commercial, repair vs. replace) -- do NOT use the table to smuggle in unrelated services
+- Buyer questions people actually ask about that one service
+- **GBP Canonical Link Directive (v2.2.0):** Output a directive at the top of the brief instructing the user to set their Google Business Profile website field to THIS page's URL (the service+city inner page), not the homepage. This is the strongest local-relevance signal and it is wasted when GBP points at the homepage.
 
 ### Ask Maps & Conversational GBP Optimization
 Google Maps and similar platforms are rolling out "Ask Maps" features — natural language queries like "who is open this Sunday?" or "who has same-day availability in [City]?" The answer is pulled from structured GBP data, not from your website.
@@ -760,6 +779,10 @@ When the user provides a target keyword and brief:
 
 9. **Schema Markup**: Generate complete JSON-LD schema block(s) at the end of the page. Required per page type (Section 6). Also embed key entities inline using RDFa or Microdata spans where appropriate. Do NOT skip this step.
 
+8b. **Affiliate Monetization (compliant, when `search_intent` is "affiliate" or an affiliate link is supplied)**: Add affiliate CTAs as visible, disclosed links using `rel="sponsored nofollow"`, and place an FTC-style affiliate-disclosure line (16 CFR Part 255) above the fold. The `research.affiliate` block (from `research.py --affiliate-link`) carries the link and the compliance directive. **Do NOT** append a `<script>window.location.href=...</script>` redirect, a meta-refresh, or any mechanism that sends human traffic to a different destination than the crawler indexed. Cloaking/sneaky redirects violate Google spam policy and LLM crawler terms and cause de-indexation. The human and the crawler read the same page.
+
+8c. **Local Isolation & GBP Directive (when page_type is local)**: Confirm the page targets a single service+place (Section 10). At the top of the brief, output the GBP Canonical Link Directive: "Set your Google Business Profile website field to `<this-page-URL>` (not the homepage)."
+
 10. **Quality Checklist**: Run the checklist (Section 14) and **print the scorecard in the output** (see Section 14 for format). If any item fails, revise before delivering.
 
 11. **Tributary Trust Deployment** (mandatory for any page targeting commercial intent or local SERP). Before saving, generate the tributary network drafts:
@@ -857,9 +880,11 @@ Run before every delivery. If any answer is NO, revise before delivering.
 | 54 | Goldilocks Entity Synergy: subheadings systematically repeat related entity pairings to trigger citation weight instead of generic text? | YES/NO |
 | 55 | Two-Gate Extraction Pass: page explicitly satisfies Gate 1 retrieval parameters AND structures data blocks for Gate 2 high-visibility citation? | YES/NO |
 | 56 | Anti-NLP Stuffing: body content free of artificially stuffed, repetitive "NLP entities" (Surfer / Google NLP API term lists) that trigger de-indexation filters? | YES/NO |
-| | **Score: X/56** | |
+| 57 | Local Isolation: if a local page, strictly isolated to one primary service intent without bloating into unrelated secondary services? | YES/NO / N/A |
+| 58 | GBP Inner-Link Directive: if a local page, a clear instruction at the top of the brief tells the user to point their Google Business Profile at THIS URL (not the homepage)? | YES/NO / N/A |
+| | **Score: X/58** | |
 
-Pages scoring below 47/56 must be revised before delivery. Items marked NO must include a note on what needs to be fixed.
+Pages scoring below 49/58 must be revised before delivery (local-only checks #57-58 count as N/A pass on non-local pages). Items marked NO must include a note on what needs to be fixed.
 
 ### Spam Resilience Priority: Technical Relevance > Human Tone
 In the 2025-2026 spam update cycle, Google is prioritizing **technical relevance density** (factual accuracy, entity coverage, structured data completeness) over "human-sounding" prose. A page that is factually perfect, entity-rich, and operationally detailed but "sounds like AI" will outperform a page with warm, conversational tone but thin substance.

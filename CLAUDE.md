@@ -54,6 +54,14 @@ The SKILL.md is the living document. It contains:
   (Google Sites, Medium, Subreddits, Google Sheets, LinkedIn). Quality gates
   apply equally to off-page content -- thin tributaries net-harm the money
   page's entity signal. Generated via `scripts/tributary_gen.py`.
+- **Local Isolation + Compliant Affiliate** (v2.2.0): local pages must
+  target one service+place (no multi-service stacking -- AI parsers
+  truncate); local pages emit a GBP directive (point GBP at the inner
+  page, not homepage). Affiliate monetization via
+  `research.py --affiliate-link` is COMPLIANT-only: disclosed
+  rel="sponsored nofollow" + FTC disclosure, same page for crawler and
+  human. Cloaking/JS-redirect affiliate bypass was rejected as a
+  spam-policy/de-indexation risk. 58-point checklist, threshold 49/58.
 - **Anti-NLP Stuffing Protocol** (v2.1.0): force-repeating NLP-tool
   entity lists (Surfer, Google NLP API, Clearscope) in body prose is
   forbidden (~25% de-indexation). Section 4 rewritten to Structural

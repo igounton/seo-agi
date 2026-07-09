@@ -2,6 +2,18 @@
 
 All notable changes to seo-agi are documented here.
 
+## [2.2.0] - 2026-06-03
+
+### Added
+- **Strict Local Service Isolation** (SKILL.md Section 10 + highlights). Local pages must target a single service+place; multi-service catch-all stacking is now a hard rule violation because AI parsers truncate stacked pages. N services in a city = N pages.
+- **GBP Canonical Link Directive** (Section 10 + Execution Protocol step 8c). Local pages emit a directive telling the user to point their Google Business Profile website field at the specific inner page, not the homepage.
+- **Compliant affiliate monetization** (`scripts/research.py --affiliate-link`, `build_affiliate_block()`, Execution Protocol step 8b). Emits a compliant affiliate directive: disclosed `rel="sponsored nofollow"` CTAs + FTC disclosure (16 CFR 255), crawler and human read the same page. Surfaced in compact/brief/JSON output.
+- **58-point quality checklist** -- adds #57 Local Isolation and #58 GBP Inner-Link Directive (both N/A pass on non-local pages). Passing threshold raised to 49/58.
+- 4 new tests in `tests/test_research_v220.py` covering the affiliate block (none/compliant modes, cloaking-forbidden guardrail, whitespace).
+
+### Changed / Rejected
+- The originally-requested "JavaScript Affiliate Bypass" (serve informational HTML to LLM crawlers while JS-redirecting humans to an affiliate page) was **rejected as cloaking / a sneaky redirect** -- a Google spam-policy violation and de-indexation trigger that directly contradicts the v2.1.0 Anti-NLP Protocol. Replaced with the compliant disclosed-CTA pattern above. SKILL.md and research.py explicitly forbid JS redirects, meta-refresh, and crawler/user content divergence for affiliate pages.
+
 ## [2.1.0] - 2026-06-03
 
 ### Added

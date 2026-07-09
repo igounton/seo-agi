@@ -452,7 +452,48 @@ def parse_args():
             "fail the v1.9.1 Brand Identity check."
         ),
     )
+    parser.add_argument(
+        "--affiliate-link",
+        default=None,
+        help=(
+            "Affiliate destination URL. When set, flags the page as affiliate "
+            "monetization and emits a COMPLIANT affiliate directive (disclosed "
+            "rel='sponsored nofollow' CTAs + FTC disclosure). Never a JS "
+            "redirect or cloak. (v2.2.0)"
+        ),
+    )
     return parser.parse_args()
+
+
+def build_affiliate_block(affiliate_link: Optional[str]) -> dict:
+    """Build the v2.2.0 affiliate monetization directive.
+
+    Compliant-only: discloses the affiliate relationship and links with
+    rel="sponsored nofollow". Explicitly forbids cloaking / sneaky
+    redirects (serving the crawler informational HTML while JS-redirecting
+    humans to an affiliate page) -- that violates Google spam policy and
+    LLM crawler terms and triggers de-indexation. The human and the crawler
+    read the same page.
+    """
+    link = (affiliate_link or "").strip()
+    if not link:
+        return {"mode": "none"}
+    return {
+        "mode": "affiliate",
+        "affiliate_link": link,
+        "cta_rel": "sponsored nofollow",
+        "disclosure_required": True,
+        "directive": (
+            "Add visible, disclosed affiliate CTAs linking to the affiliate "
+            "URL with rel=\"sponsored nofollow\". Place an FTC-style "
+            "affiliate-disclosure line (16 CFR Part 255) above the fold. "
+            "The crawler and the human read the SAME page."
+        ),
+        "forbidden": (
+            "No <script>window.location.href=...</script>, no meta-refresh, "
+            "no cloaking or crawler/user content divergence."
+        ),
+    }
 
 
 def _parse_differentiators(raw: Optional[str]) -> list[str]:
@@ -500,6 +541,7 @@ def load_mock_data(keyword: str) -> dict:
             "flagged": [],
             "status": "not_assessed (mock data)",
         },
+        "affiliate": build_affiliate_block(getattr(args, "affiliate_link", None)),
         "serp": serp_data,
         "related_keywords": related_kw,
         "analysis": {
@@ -568,6 +610,7 @@ def run_research(args) -> dict:
                 "flagged": [],
                 "status": "not_assessed (no-creds fallback)",
             },
+            "affiliate": build_affiliate_block(getattr(args, "affiliate_link", None)),
             "serp": {"organic": [], "paa": [], "featured_snippet": None},
             "related_keywords": [],
             "analysis": {
@@ -681,6 +724,9 @@ def run_research(args) -> dict:
     # Step 7: v2.0.0 -- DOM flattening competitor audit
     dom_nesting = flag_deep_nesting(content_data, organic, top_n=3, max_depth=3)
 
+    # Step 8: v2.2.0 -- compliant affiliate monetization directive
+    affiliate = build_affiliate_block(getattr(args, "affiliate_link", None))
+
     # Assemble research output. Surface the new signals at top level for
     # easy brief consumption -- do not bury them inside `analysis`.
     content_parser_summary = (
@@ -701,6 +747,7 @@ def run_research(args) -> dict:
         "missing_spokes": missing_spokes,
         "structural_directives": STRUCTURAL_DIRECTIVES,
         "dom_nesting": dom_nesting,
+        "affiliate": affiliate,
         "serp": serp_data,
         "related_keywords": related_kw[:20],
         "analysis": analysis,
@@ -873,6 +920,15 @@ def format_compact(research: dict) -> str:
             for f in flagged:
                 lines.append(f"    - {f.get('url', '?')} (depth {f.get('max_depth', '?')})")
 
+    # Affiliate monetization directive (v2.2.0) -- only when in affiliate mode
+    aff = research.get("affiliate", {})
+    if aff and aff.get("mode") == "affiliate":
+        lines.append("\n## Affiliate Monetization (v2.2.0 -- COMPLIANT, no cloaking)")
+        lines.append(f"  Link: {aff.get('affiliate_link', '?')}")
+        lines.append(f"  CTA rel: {aff.get('cta_rel', '?')}")
+        lines.append(f"  Directive: {aff.get('directive', '?')}")
+        lines.append(f"  Forbidden: {aff.get('forbidden', '?')}")
+
     return "\n".join(lines)
 
 
@@ -899,6 +955,7 @@ def main():
             "missing_spokes": research.get("missing_spokes", []),
             "structural_directives": research.get("structural_directives", {}),
             "dom_nesting": research.get("dom_nesting", {}),
+            "affiliate": research.get("affiliate", {}),
             "word_count_stats": analysis.get("word_count_stats"),
             "paa_questions": analysis.get(
                 "paa_questions",

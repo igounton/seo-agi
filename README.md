@@ -1,4 +1,4 @@
-# seobuild-onpage v2.1.0
+# seobuild-onpage v2.2.0
 
 ### One command. Competitive data in. Ranking pages out.
 
@@ -9,6 +9,12 @@ claude install-skill gbessoni/seobuild-onpage
 Most SEO tools tell you what's wrong with your site. This one writes the pages.
 
 `/seoagi "airport parking JFK"` pulls the current SERP, analyzes what's ranking, finds the gaps in their content, and writes you a complete page -- with the heading structure, depth, FAQ section, and schema markup that actually competes. Not thin content. Not keyword-stuffed filler. Pages backed by live data from the tools the pros use.
+
+**New in v2.2.0 -- Compliant Affiliate Monetization & Local Isolation:**
+- **Strict Local Service Isolation** -- local pages must target a single service+place ("Water Heater Repair Anaheim"), never a multi-service catch-all. AI parsers truncate stacked pages because they can't form a clean service-to-place association. N services in a city = N pages.
+- **GBP Canonical Link Directive** -- local pages now emit a directive telling the user to point their Google Business Profile website field at the specific inner page, not the homepage. Strongest local-relevance signal, usually wasted on the homepage.
+- **Compliant Affiliate Monetization** -- `research.py --affiliate-link` emits a compliant affiliate directive: disclosed `rel="sponsored nofollow"` CTAs + FTC disclosure, crawler and human read the same page. (An earlier draft of this feature proposed a JS redirect that served informational HTML to LLMs while bouncing humans to an affiliate page -- that is cloaking / a sneaky redirect, a Google spam-policy violation and de-indexation trigger, so it was replaced with the compliant pattern.)
+- **58-point quality checklist** -- adds Local Isolation (#57) and GBP Inner-Link Directive (#58) checks (N/A pass on non-local pages). Passing threshold raised to 49/58.
 
 **New in v2.1.0 -- The Anti-NLP Protocol & Two-Gate AEO:**
 - **The NLP SEO Lie** -- practitioner testing shows that artificially stuffing traditional NLP entities (Surfer SEO, Google's Natural Language API, Clearscope term lists) into body copy to hit a coverage score results in ~25% de-indexation. The agent is strictly forbidden from NLP entity stuffing. Entities earn weight through structural placement, never repetition targets.
@@ -129,7 +135,7 @@ SEO-AGI:
   12. For rewrites: evaluates each legacy URL and recommends 301 (when topic
       survives and equity should consolidate) or 410 (when the URL is thin,
       cannibalizing, or out-of-circle and should be pruned)
-  13. Validates against 56-point quality checklist
+  13. Validates against 58-point quality checklist
   14. Prints scorecard so you see exactly what passed
 ```
 
@@ -184,7 +190,7 @@ This isn't a wrapper around "write me an SEO article." The skill encodes strateg
 - "Not For You" block: honest section telling readers when this option is a bad fit (trust signal competitors skip)
 - Information Gain Test: every page must contain content not found in the top 10 Google results
 
-**The 56-point quality checklist every page runs through (selected highlights):**
+**The 58-point quality checklist every page runs through (selected highlights):**
 - Information gain over top 10 Google results? Check.
 - Reddit Test: would a practitioner upvote this? Check.
 - Core answer in first 150 words? Check.
@@ -236,8 +242,10 @@ This isn't a wrapper around "write me an SEO article." The skill encodes strateg
 - Goldilocks Entity Synergy -- subheadings repeat core entity pairings, not generic text? Check.
 - Two-Gate Extraction -- satisfies Gate 1 retrieval AND Gate 2 citation extraction? Check.
 - Anti-NLP Stuffing -- body free of force-repeated NLP-tool entity lists (de-indexation risk)? Check.
+- Local Isolation -- local page targets one service+place, no multi-service stacking? Check.
+- GBP Inner-Link Directive -- local page tells user to point GBP at this URL, not homepage? Check.
 
-Pages scoring below 47/56 get flagged with specific items to fix. The scorecard is printed at the end of every output so you see exactly what passed.
+Pages scoring below 49/58 get flagged with specific items to fix. The scorecard is printed at the end of every output so you see exactly what passed.
 
 ---
 
