@@ -54,6 +54,12 @@ The SKILL.md is the living document. It contains:
   (Google Sites, Medium, Subreddits, Google Sheets, LinkedIn). Quality gates
   apply equally to off-page content -- thin tributaries net-harm the money
   page's entity signal. Generated via `scripts/tributary_gen.py`.
+- **Anti-NLP Stuffing Protocol** (v2.1.0): force-repeating NLP-tool
+  entity lists (Surfer, Google NLP API, Clearscope) in body prose is
+  forbidden (~25% de-indexation). Section 4 rewritten to Structural
+  Entity Placement -- entities go in headings/table cells/schema, not
+  paragraph text. research.py STRUCTURAL_DIRECTIVES gains an
+  anti_nlp_stuffing directive. 56-point checklist, threshold 47/56.
 - **Two-Gate AEO & DOM Flattening** (v2.0.0): optimization targets
   Gate 1 (retrieval-pool entry) + Gate 2 (citation extraction).
   Anti-Paragraph rule (primary H2 answers in block containers, never

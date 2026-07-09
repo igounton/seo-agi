@@ -1,11 +1,12 @@
 ---
 name: seobuild-onpage
-version: 2.0.0
+version: 2.1.0
 description: >
   Write SEO pages that rank on Google AND get cited by LLMs. Uses live SERP data,
   500-token chunk architecture, RAG optimization for Gemini 3.5 Flash, the
   Two-Gate AEO framework (retrieval-pool entry + selected-citation extraction),
-  and the Reddit Test quality gate.
+  the Anti-NLP Stuffing Protocol (structural entity placement, no keyword-density
+  stuffing), and the Reddit Test quality gate.
   Triggers on: "write an SEO page", "seo-agi", "seo page for [keyword]",
   "rank for [keyword]", "rewrite this page for SEO", "GEO", "AEO",
   "write a page that ranks".
@@ -28,9 +29,14 @@ You do not write generic fluff. You write highly specific, practical, answer-for
 
 ---
 
-## NEW IN v2.0.0 -- THE TWO-GATE AEO & DOM FLATTENING PROTOCOLS
+## NEW IN v2.1.0 -- THE ANTI-NLP PROTOCOL & TWO-GATE AEO
 
-v2.0.0 reframes the entire optimization target. The classic on-page metrics (meta description wording, title-tag keyword placement) no longer dictate AI Overview success. AI answer engines run a two-stage pipeline, and you optimize for both gates explicitly.
+### The NLP SEO Lie (v2.1.0)
+Practitioner testing shows that artificially stuffing traditional NLP entities -- the salience-ranked term lists exported from Surfer SEO, Google's Natural Language API, Clearscope, and similar tools -- into body content to hit a "coverage score" results in roughly a **25% de-indexation penalty**. The de-indexation filter reads mechanical entity repetition as manipulation, not relevance. **You are strictly forbidden from NLP entity stuffing.** Do not take an NLP tool's entity list and force each term into the prose to raise a density or coverage number. Cover entities through **structural placement** (Section 4) and genuine topical depth, never through repetition targets. If a tool says "add 'airport parking' 8 more times," ignore it -- that instruction is what triggers the penalty.
+
+The rest of the v2.0.0 Two-Gate framework remains in full force:
+
+v2.0.0 reframed the entire optimization target. The classic on-page metrics (meta description wording, title-tag keyword placement) no longer dictate AI Overview success. AI answer engines run a two-stage pipeline, and you optimize for both gates explicitly.
 
 ### The Two-Gate Paradigm Shift
 - **Gate 1 -- Retrieval Pool Entry.** Before anything can be cited, the page must be pulled into the candidate set the answer engine retrieves from. Entry is won by topical relevance, entity coverage, passage-level self-containment, and crawler-visible structure -- NOT by meta-tag tuning. If you fail Gate 1, nothing else matters.
@@ -221,15 +227,19 @@ Every page must cover:
 - **Authority:** Cite official sources (airport authority, transit authority, published fare schedules)
 - **Trust:** Honest "Not For You" sections, transparent comparison against non-parking options
 
-### Entity / Knowledge Graph
-Google's KG uses different NLP than transformers. Entity signals must be explicit:
-- Full official entity names at least once (e.g., "Hartsfield-Jackson Atlanta International Airport" not just "ATL")
-- Terminal numbers/names as distinct entities
-- Airline-to-terminal mappings where relevant
-- Parking lot names as entities, not just list items
-- Operating authority names (Port Authority, airport authority, etc.)
-- **Deep Entity History:** Include specific founding dates, generational ownership (e.g., "third-generation family business"), and origin stories.
-- **Identity & Amenity Tags:** Explicitly state identity attributes (e.g., "women-owned", "veteran-owned") and high-value physical amenities (e.g., "free parking", "on-site consultations") as these map directly to Google Business Profile tags and conversational AI filtering.
+### Entity / Structural Entity Placement (v2.1.0)
+Entities earn weight from **where** they sit, not from how many times they appear. Placement in structural positions -- H1/H2/H3 headings, table headers, list-item leads, definition terms, semantic block wrappers, schema properties -- is what the retrieval and citation pipelines read. Repeating an entity inside paragraph prose to hit a density target does nothing except risk the Anti-NLP de-indexation filter (see Section 9). Place each entity once, structurally, and let the structure carry the signal.
+
+**Rules:**
+- Full official entity names appear at least once in a **structural position** -- a heading, a table cell, a definition term, or a schema field -- not buried mid-paragraph (e.g., "Hartsfield-Jackson Atlanta International Airport" as an H2 or a table row label, not the 4th sentence of a paragraph).
+- Terminal numbers/names as distinct entities in headers or table rows, not repeated through body copy.
+- Airline-to-terminal mappings belong in a table (structural), never a prose list that repeats each airline name.
+- Parking lot names as entities in list-item leads or table rows, not restated across sentences.
+- Operating authority names (Port Authority, airport authority, etc.) once, in a structural block or schema `provider` field.
+- **Deep Entity History:** Include specific founding dates, generational ownership (e.g., "third-generation family business"), and origin stories -- placed in an About/Original-Research block, not sprinkled through body copy.
+- **Identity & Amenity Tags:** Explicitly state identity attributes (e.g., "women-owned", "veteran-owned") and high-value physical amenities (e.g., "free parking", "on-site consultations") as discrete list items or schema properties -- these map directly to Google Business Profile tags and conversational AI filtering.
+
+**Do not** repeat an entity to raise its on-page frequency. Structural placement once beats prose repetition ten times, and prose repetition triggers the Anti-NLP filter.
 
 ---
 
@@ -418,6 +428,7 @@ Every page must include a section framed as original research, a data experiment
 - Empty headings without content
 - Generic praise repeated across all items in a listicle
 - Keyword stuffing
+- **NLP entity stuffing** -- taking an entity/term list from Surfer SEO, Google's Natural Language API, Clearscope, or any "content score" tool and force-repeating those terms in body copy to hit a coverage or density number. Practitioner testing links this to ~25% de-indexation. Cover entities via structural placement (Section 4), never repetition targets. (v2.1.0 Anti-NLP Protocol)
 - Jump-link TOC patterns that create weak fragment URLs
 - Content that sits outside your core service topical circle (a wildlife recovery site does not need a post on the industrial uses of guano -- wide topical circles dilute AI authority signals and confuse intent classification)
 - **Multiple H1 tags** -- one H1 per page, always. Multiple H1s are a confirmed structural weakness
@@ -845,9 +856,10 @@ Run before every delivery. If any answer is NO, revise before delivering.
 | 53 | DOM Flattening Depth: structural layout flat (max ~3 nesting levels) and free of deep wrapper-node bloat? | YES/NO |
 | 54 | Goldilocks Entity Synergy: subheadings systematically repeat related entity pairings to trigger citation weight instead of generic text? | YES/NO |
 | 55 | Two-Gate Extraction Pass: page explicitly satisfies Gate 1 retrieval parameters AND structures data blocks for Gate 2 high-visibility citation? | YES/NO |
-| | **Score: X/55** | |
+| 56 | Anti-NLP Stuffing: body content free of artificially stuffed, repetitive "NLP entities" (Surfer / Google NLP API term lists) that trigger de-indexation filters? | YES/NO |
+| | **Score: X/56** | |
 
-Pages scoring below 46/55 must be revised before delivery. Items marked NO must include a note on what needs to be fixed.
+Pages scoring below 47/56 must be revised before delivery. Items marked NO must include a note on what needs to be fixed.
 
 ### Spam Resilience Priority: Technical Relevance > Human Tone
 In the 2025-2026 spam update cycle, Google is prioritizing **technical relevance density** (factual accuracy, entity coverage, structured data completeness) over "human-sounding" prose. A page that is factually perfect, entity-rich, and operationally detailed but "sounds like AI" will outperform a page with warm, conversational tone but thin substance.

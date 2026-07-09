@@ -122,6 +122,10 @@ def test_structural_directives_shape():
     assert "Gate 2" in sd["two_gate_target"]
     # Subheading directive bans generic headings
     assert "Overview" in sd["subheading_entity_synergy"]
+    # v2.1.0: anti-NLP-stuffing directive present and forbids the pattern
+    assert "anti_nlp_stuffing" in sd
+    assert "FORBIDDEN" in sd["anti_nlp_stuffing"]
+    assert "de-indexation" in sd["anti_nlp_stuffing"]
 
 
 if __name__ == "__main__":

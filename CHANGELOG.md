@@ -2,6 +2,17 @@
 
 All notable changes to seo-agi are documented here.
 
+## [2.1.0] - 2026-06-03
+
+### Added
+- **The Anti-NLP Stuffing Protocol** (SKILL.md "The NLP SEO Lie", Section 9 Never Do). Practitioner testing links force-repeating NLP-tool entity lists (Surfer SEO, Google Natural Language API, Clearscope) in body prose to ~25% de-indexation. The agent is strictly forbidden from NLP entity stuffing; entities earn weight through structural placement, not repetition targets.
+- **Structural Entity Placement** -- Section 4 (SEAT Signals) rewritten. Removed the "Google's KG uses different NLP than transformers" framing; replaced with placement rules: entities belong in headings, table cells, definition terms, and schema fields, not stuffed into paragraph text. Placement once beats prose repetition ten times.
+- **`anti_nlp_stuffing` directive** added to `STRUCTURAL_DIRECTIVES` in `scripts/research.py`, surfaced in compact + brief + JSON output.
+- **56-point quality checklist** -- adds #56 Anti-NLP Stuffing check. Passing threshold raised to 47/56.
+
+### Note
+The other v2.1.0 highlight items (Two-Gate paradigm, Anti-Paragraph Snippet, DOM Flattening, Goldilocks Entity Synergy) shipped in v2.0.0 and are recapped in the v2.1.0 version-highlights block for completeness; they are unchanged. The single net-new checklist item is #56, which is why the count moved 55 -> 56.
+
 ## [2.0.0] - 2026-06-03
 
 Major release. Reframes the optimization target around the Two-Gate AEO model.

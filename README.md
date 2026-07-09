@@ -1,4 +1,4 @@
-# seobuild-onpage v2.0.0
+# seobuild-onpage v2.1.0
 
 ### One command. Competitive data in. Ranking pages out.
 
@@ -9,6 +9,12 @@ claude install-skill gbessoni/seobuild-onpage
 Most SEO tools tell you what's wrong with your site. This one writes the pages.
 
 `/seoagi "airport parking JFK"` pulls the current SERP, analyzes what's ranking, finds the gaps in their content, and writes you a complete page -- with the heading structure, depth, FAQ section, and schema markup that actually competes. Not thin content. Not keyword-stuffed filler. Pages backed by live data from the tools the pros use.
+
+**New in v2.1.0 -- The Anti-NLP Protocol & Two-Gate AEO:**
+- **The NLP SEO Lie** -- practitioner testing shows that artificially stuffing traditional NLP entities (Surfer SEO, Google's Natural Language API, Clearscope term lists) into body copy to hit a coverage score results in ~25% de-indexation. The agent is strictly forbidden from NLP entity stuffing. Entities earn weight through structural placement, never repetition targets.
+- **Structural Entity Placement** (Section 4 rewrite) -- entities belong in headings, table cells, definition terms, and schema fields, not stuffed into paragraph text. Placement once beats prose repetition ten times.
+- Two-Gate AEO, Anti-Paragraph Snippet, DOM Flattening, and Goldilocks Entity Synergy (all shipped in v2.0.0) remain in full force.
+- **56-point quality checklist** -- adds the Anti-NLP Stuffing check (#56). Passing threshold raised to 47/56.
 
 **New in v2.0.0 -- The Two-Gate AEO & DOM Flattening Protocols:**
 - **The Two-Gate Paradigm Shift** -- traditional metrics like meta descriptions and title tags no longer dictate AI Overview success. The agent now optimizes primarily for Gate 1 (Retrieval Pool Entry) and Gate 2 (Selected Citation Extraction). Entering the candidate pool and getting your passage selected for citation are two different jobs; v2.0.0 optimizes both explicitly.
@@ -123,7 +129,7 @@ SEO-AGI:
   12. For rewrites: evaluates each legacy URL and recommends 301 (when topic
       survives and equity should consolidate) or 410 (when the URL is thin,
       cannibalizing, or out-of-circle and should be pruned)
-  13. Validates against 55-point quality checklist
+  13. Validates against 56-point quality checklist
   14. Prints scorecard so you see exactly what passed
 ```
 
@@ -178,7 +184,7 @@ This isn't a wrapper around "write me an SEO article." The skill encodes strateg
 - "Not For You" block: honest section telling readers when this option is a bad fit (trust signal competitors skip)
 - Information Gain Test: every page must contain content not found in the top 10 Google results
 
-**The 55-point quality checklist every page runs through (selected highlights):**
+**The 56-point quality checklist every page runs through (selected highlights):**
 - Information gain over top 10 Google results? Check.
 - Reddit Test: would a practitioner upvote this? Check.
 - Core answer in first 150 words? Check.
@@ -229,8 +235,9 @@ This isn't a wrapper around "write me an SEO article." The skill encodes strateg
 - DOM Flattening -- layout flat (max ~3 nesting levels), no wrapper-node bloat? Check.
 - Goldilocks Entity Synergy -- subheadings repeat core entity pairings, not generic text? Check.
 - Two-Gate Extraction -- satisfies Gate 1 retrieval AND Gate 2 citation extraction? Check.
+- Anti-NLP Stuffing -- body free of force-repeated NLP-tool entity lists (de-indexation risk)? Check.
 
-Pages scoring below 46/55 get flagged with specific items to fix. The scorecard is printed at the end of every output so you see exactly what passed.
+Pages scoring below 47/56 get flagged with specific items to fix. The scorecard is printed at the end of every output so you see exactly what passed.
 
 ---
 

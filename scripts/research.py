@@ -289,6 +289,12 @@ STRUCTURAL_DIRECTIVES = {
         "crawler-visible flat structure); Gate 2 = selected-citation "
         "extraction (liftable block-level answer units)"
     ),
+    "anti_nlp_stuffing": (
+        "FORBIDDEN: force-repeating NLP entity/term lists (Surfer, Google "
+        "NLP API, Clearscope) in body prose to hit a coverage/density score "
+        "-- linked to ~25% de-indexation. Place entities structurally "
+        "(headings, table cells, schema), never by repetition target."
+    ),
 }
 
 # Container tags that increase DOM nesting depth. HTML void elements never do.
@@ -854,6 +860,7 @@ def format_compact(research: dict) -> str:
         lines.append(f"  - Max DOM nesting depth: {sd.get('max_dom_nesting_depth', '?')}")
         lines.append(f"  - Subheading entity synergy: {sd.get('subheading_entity_synergy', '?')}")
         lines.append(f"  - Two-gate target: {sd.get('two_gate_target', '?')}")
+        lines.append(f"  - Anti-NLP stuffing: {sd.get('anti_nlp_stuffing', '?')}")
 
     # DOM nesting audit (v2.0.0)
     dn = research.get("dom_nesting", {})
